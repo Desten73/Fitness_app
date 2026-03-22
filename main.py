@@ -26,7 +26,7 @@ def main(page: ft.Page):
             page.views.append(WorkoutsView(page, workout_service, client_service).build())
         elif page.route == "/clients":
             from views.clients_view import ClientsView
-            page.views.append(ClientsView(page, client_service).build())
+            page.views.append(ClientsView(page, client_service, workout_service).build())
         elif page.route == "/calendar":
             from views.calendar_view import CalendarView
             page.views.append(CalendarView(page).build())
@@ -36,6 +36,10 @@ def main(page: ft.Page):
         elif page.route == "/add_client":
             from views.add_client import AddClientView
             page.views.append(AddClientView(page, client_service).build())
+        elif page.route.startswith("/client_details/"):
+            from views.client_details import ClientDetailsView
+            client_id = int(page.route.split("/")[-1])
+            page.views.append(ClientDetailsView(page, client_service, workout_service, client_id).build())
 
         page.update()
 

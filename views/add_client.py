@@ -8,6 +8,7 @@ class AddClientView:
         self.client_service = client_service
         self.name_field = ft.TextField(label="Имя", autofocus=True)
         self.phone_field = ft.TextField(label="Телефон")
+        self.price_field = ft.TextField(label="Стоимость тренировки", value="1000", input_filter=ft.NumbersOnlyInputFilter())
         self.goals_field = ft.TextField(label="Цели (через запятую)")
         self.notes_field = ft.TextField(label="Заметки", multiline=True)
 
@@ -18,6 +19,7 @@ class AddClientView:
                 ft.AppBar(title=ft.Text("Добавить клиента"), bgcolor=ft.Colors.OUTLINE_VARIANT),
                 self.name_field,
                 self.phone_field,
+                self.price_field,
                 self.goals_field,
                 self.notes_field,
                 ft.Row(
@@ -44,6 +46,7 @@ class AddClientView:
         client = Client(
             name=self.name_field.value,
             phone=self.phone_field.value,
+            workout_price=int(self.price_field.value or 1000),
             goals=goals,
             notes=self.notes_field.value or ""
         )

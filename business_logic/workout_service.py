@@ -37,3 +37,8 @@ class WorkoutService:
         others.sort(key=lambda w: (w.date, w.time), reverse=True)
 
         return upcoming + others
+
+    def get_client_workouts(self, client_id: int) -> List[Workout]:
+        """Возвращает все тренировки конкретного клиента"""
+        all_workouts = self.get_all_workouts()
+        return [w for w in all_workouts if client_id in w.client_ids]

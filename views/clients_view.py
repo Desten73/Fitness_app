@@ -10,7 +10,7 @@ class ClientsView:
     def build(self) -> ft.View:
         # Кнопка добавления клиента
         add_button = ft.FloatingActionButton(
-            icon=ft.icons.ADD,
+            icon=ft.Icons.ADD,
             on_click=self.add_client_click
         )
 
@@ -29,9 +29,9 @@ class ClientsView:
 
         # Собираем экран
         view = ft.View(
-            "/clients",
-            [
-                ft.AppBar(title=ft.Text("Клиенты"), bgcolor=ft.colors.SURFACE_VARIANT),
+            route="/clients",
+            controls=[
+                ft.AppBar(title=ft.Text("Клиенты"), bgcolor=ft.Colors.OUTLINE_VARIANT),
                 title,
                 ft.Row([search_field]),
                 self.clients_list,
@@ -61,7 +61,7 @@ class ClientsView:
                     subtitle=ft.Text(client.phone),
                     on_click=lambda e, c=client: self.open_client_details(c),
                     trailing=ft.IconButton(
-                        icon=ft.icons.DELETE,
+                        icon=ft.Icons.DELETE,
                         on_click=lambda e, c=client: self.delete_client_click(c)
                     ),
                 )
@@ -76,7 +76,7 @@ class ClientsView:
                         subtitle=ft.Text(client.phone, color=ft.colors.GREY_500),
                         on_click=lambda e, c=client: self.open_client_details(c),
                         trailing=ft.IconButton(
-                            icon=ft.icons.DELETE,
+                            icon=ft.Icons.DELETE,
                             on_click=lambda e, c=client: self.delete_client_click(c),
                             icon_color=ft.colors.GREY_500
                         ),
@@ -86,14 +86,11 @@ class ClientsView:
 
     def add_client_click(self, e):
         # Переход на экран добавления клиента
-        from views.add_client import AddClientView
-        self.page.views.append(AddClientView(self.page, self.client_service).build())
-        self.page.update()
+        self.page.go("/add_client")
 
     def open_client_details(self, client):
-        from views.client_details import ClientDetailsView
-        self.page.views.append(ClientDetailsView(self.page, self.client_service, client).build())
-        self.page.update()
+        # self.page.go(f"/client_details/{client.doc_id}")
+        pass
 
     def delete_client_click(self, client):
         def confirm_delete(e):

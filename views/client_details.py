@@ -193,11 +193,10 @@ class ClientDetailsView:
         def confirm_delete(ev):
             self.client_service.delete_client(self.client_id)
             dlg.open = False
-            self.page.views.pop()
-            self.page.update()
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Клиент {self.client.name} удалён"))
             self.page.snack_bar.open = True
-            self.page.update()
+            # Навигация назад к списку клиентов
+            self.page.go("/clients")
 
         dlg = ft.AlertDialog(
             title=ft.Text("Удалить клиента?"),
@@ -207,7 +206,7 @@ class ClientDetailsView:
                 ft.TextButton("Удалить", on_click=confirm_delete)
             ]
         )
-        self.page.overlay.append(dlg)
+        self.page.dialog = dlg
         dlg.open = True
         self.page.update()
 

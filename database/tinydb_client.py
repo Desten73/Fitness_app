@@ -25,10 +25,10 @@ class TinyDBClient(ClientDatabaseInterface):
         return self.clients_table.insert(client_data)
 
     def update_client(self, doc_id: int, client_data: dict) -> None:
-        self.clients_table.update(client_data, doc_id=doc_id)
+        self.clients_table.update(client_data, doc_ids=[doc_id])
 
     def delete_client(self, doc_id: int) -> None:
-        self.clients_table.remove(doc_id=doc_id)
+        self.clients_table.remove(doc_ids=[doc_id])
 
     def get_all_workouts(self) -> List[dict]:
         workouts = self.workouts_table.all()

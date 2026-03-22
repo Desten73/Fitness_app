@@ -28,3 +28,13 @@ class ClientDatabaseInterface(ABC):
     def delete_client(self, doc_id: int) -> None:
         """Удаляет клиента"""
         pass
+
+    @abstractmethod
+    def get_all_workouts(self) -> List[dict]:
+        """Возвращает список всех тренировок"""
+        pass
+
+    @abstractmethod
+    def add_workout(self, workout_data: dict) -> int:
+        """Добавляет тренировку"""
+        pass

@@ -7,9 +7,11 @@ class ClientService:
         self.db = db
 
     def get_all_clients(self) -> List[Client]:
-        """Получить всех клиентов в виде объектов Client"""
+        """Получить всех клиентов в виде объектов Client (отсортированы по алфавиту)"""
         clients_data = self.db.get_all_clients()
-        return [Client.from_dict(c) for c in clients_data]
+        clients = [Client.from_dict(c) for c in clients_data]
+        clients.sort(key=lambda c: c.name.lower())
+        return clients
 
     def get_client(self, doc_id: int) -> Client | None:
         data = self.db.get_client(doc_id)
@@ -20,7 +22,6 @@ class ClientService:
     def add_client(self, client: Client) -> int:
         """Добавляет клиента, возвращает его ID"""
         data = client.to_dict()
-        # Убираем doc_id, если он был (на случай, если клиент уже имеет ID)
         if "doc_id" in data:
             del data["doc_id"]
         return self.db.add_client(data)
@@ -30,7 +31,6 @@ class ClientService:
         if client.doc_id is None:
             raise ValueError("Cannot update client without doc_id")
         data = client.to_dict()
-        # Убираем doc_id из обновляемых данных, чтобы не сохранить его как поле
         if "doc_id" in data:
             del data["doc_id"]
         self.db.update_client(client.doc_id, data)
@@ -46,3 +46,15 @@ class ClientService:
             c for c in all_clients
             if query_lower in c.name.lower() or query_lower in c.phone
         ]
+
+    def archive_client(self, doc_id: int) -> None:
+        client = self.get_client(doc_id)
+        if client:
+            client.is_archived = True
+            self.update_client(client)
+
+    def unarchive_client(self, doc_id: int) -> None:
+        client = self.get_client(doc_id)
+        if client:
+            client.is_archived = False
+            self.update_client(client)

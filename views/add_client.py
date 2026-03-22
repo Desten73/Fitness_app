@@ -14,8 +14,8 @@ class AddClientView:
 
     def build(self) -> ft.View:
         return ft.View(
-            "/add_client",
-            [
+            route="/add_client",
+            controls=[
                 ft.AppBar(title=ft.Text("Добавить клиента"), bgcolor=ft.colors.SURFACE_VARIANT),
                 self.name_field,
                 self.phone_field,

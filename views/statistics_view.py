@@ -8,8 +8,8 @@ class StatisticsView:
 
     def build(self) -> ft.View:
         return ft.View(
-            "/statistics",
-            [
+            route="/statistics",
+            controls=[
                 ft.AppBar(title=ft.Text("Статистика"), bgcolor=ft.colors.SURFACE_VARIANT),
                 ft.Text("Статистика о количестве заработанных денег, количестве тренировок, клиентах и посещаемости.", size=20),
                 ft.Text("Скоро в приложении!", size=14, color=ft.colors.GREY_600),

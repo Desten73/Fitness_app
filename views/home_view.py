@@ -14,7 +14,7 @@ class HomeView:
         # Название приложения и текущая дата
         header = ft.Row(
             [
-                ft.Text("Fitness Trainer", size=30, weight=ft.FontWeight.BOLD),
+                ft.Text("Фитнес-тренер", size=30, weight=ft.FontWeight.BOLD),
                 ft.Text(current_date, size=20)
             ],
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN
@@ -25,15 +25,15 @@ class HomeView:
 
         # Список кнопок с иконками
         menu_buttons = [
-            ("Тренировки", ft.Icons.FITNESS_CENTER, self.open_workouts),
-            ("Клиенты", ft.Icons.PEOPLE, self.open_clients),
-            ("Календарь тренировок", ft.Icons.CALENDAR_MONTH, self.open_calendar),
-            ("Статистика", ft.Icons.QUERY_STATS, self.open_statistics),
+            ("Тренировки", ft.Icons.FITNESS_CENTER, "/workouts"),
+            ("Клиенты", ft.Icons.PEOPLE, "/clients"),
+            ("Календарь тренировок", ft.Icons.CALENDAR_MONTH, "/calendar"),
+            ("Статистика", ft.Icons.QUERY_STATS, "/statistics"),
         ]
 
         buttons_column = ft.Column(
             [
-                ft.Button(
+                ft.ElevatedButton(
                     content=ft.Row(
                         [
                             ft.Icon(icon),
@@ -41,14 +41,14 @@ class HomeView:
                         ],
                         alignment=ft.MainAxisAlignment.START
                     ),
-                    on_click=on_click,
+                    on_click=lambda _, r=route: self.page.go(r),
                     style=ft.ButtonStyle(
                         shape=ft.RoundedRectangleBorder(radius=10),
                     ),
                     width=400,
                     height=60
                 )
-                for text, icon, on_click in menu_buttons
+                for text, icon, route in menu_buttons
             ],
             spacing=20,
             alignment=ft.MainAxisAlignment.CENTER,
@@ -56,8 +56,8 @@ class HomeView:
         )
 
         view = ft.View(
-            "/",
-            [
+            route="/",
+            controls=[
                 header,
                 divider,
                 ft.Container(height=40),
@@ -67,23 +67,3 @@ class HomeView:
             vertical_alignment=ft.MainAxisAlignment.START
         )
         return view
-
-    def open_workouts(self, e):
-        from views.workouts_view import WorkoutsView
-        self.page.views.append(WorkoutsView(self.page, self.workout_service, self.client_service).build())
-        self.page.update()
-
-    def open_clients(self, e):
-        from views.clients_view import ClientsView
-        self.page.views.append(ClientsView(self.page, self.client_service).build())
-        self.page.update()
-
-    def open_calendar(self, e):
-        from views.calendar_view import CalendarView
-        self.page.views.append(CalendarView(self.page).build())
-        self.page.update()
-
-    def open_statistics(self, e):
-        from views.statistics_view import StatisticsView
-        self.page.views.append(StatisticsView(self.page, self.client_service, self.workout_service).build())
-        self.page.update()

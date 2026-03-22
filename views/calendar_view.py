@@ -6,8 +6,8 @@ class CalendarView:
 
     def build(self) -> ft.View:
         return ft.View(
-            "/calendar",
-            [
+            route="/calendar",
+            controls=[
                 ft.AppBar(title=ft.Text("Календарь тренировок"), bgcolor=ft.colors.SURFACE_VARIANT),
                 ft.Text("Календарь тренировок за месяц в удобном виде.", size=20),
                 ft.Text("Скоро в приложении!", size=14, color=ft.colors.GREY_600),

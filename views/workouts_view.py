@@ -11,13 +11,13 @@ class WorkoutsView:
     def build(self) -> ft.View:
         add_button = ft.ElevatedButton(
             "Добавить тренировку",
-            icon=ft.icons.ADD,
+            icon=ft.Icons.ADD,
             on_click=self.add_workout_click
         )
 
         view = ft.View(
-            "/workouts",
-            [
+            route="/workouts",
+            controls=[
                 ft.AppBar(title=ft.Text("Тренировки"), bgcolor=ft.colors.SURFACE_VARIANT),
                 ft.Row([add_button], alignment=ft.MainAxisAlignment.CENTER),
                 self.workouts_list,
@@ -30,9 +30,14 @@ class WorkoutsView:
 
     def refresh_list(self):
         self.workouts_list.controls.clear()
-        workouts = self.workout_service.get_sorted_workouts()
-        clients = self.client_service.get_all_clients()
-        client_map = {c.doc_id: c.name for c in clients}
+        try:
+            workouts = self.workout_service.get_sorted_workouts()
+            clients = self.client_service.get_all_clients()
+            client_map = {c.doc_id: c.name for c in clients if c.doc_id is not None}
+        except Exception as e:
+            print(f"Error refreshing workouts list: {e}")
+            self.workouts_list.controls.append(ft.Text(f"Ошибка загрузки данных: {e}", color=ft.colors.RED))
+            return
 
         for w in workouts:
             client_names = [client_map.get(cid, "Неизвестный") for cid in w.client_ids]
@@ -51,7 +56,7 @@ class WorkoutsView:
                         content=ft.Column(
                             [
                                 ft.ListTile(
-                                    leading=ft.Icon(ft.icons.FITNESS_CENTER),
+                                    leading=ft.Icon(ft.Icons.FITNESS_CENTER),
                                     title=ft.Text(f"{w.date.strftime('%d.%m.%Y')} {w.time.strftime('%H:%M')}"),
                                     subtitle=ft.Text(f"Клиенты: {client_names_str}\nЦена: {w.price} руб.\nСтатус: {w.status}"),
                                 ),
@@ -66,6 +71,5 @@ class WorkoutsView:
         self.page.update()
 
     def add_workout_click(self, e):
-        from views.add_workout import AddWorkoutView
-        self.page.views.append(AddWorkoutView(self.page, self.client_service, self.workout_service).build())
-        self.page.update()
+        # self.page.go("/add_workout")
+        pass

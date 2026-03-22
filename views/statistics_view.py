@@ -10,9 +10,9 @@ class StatisticsView:
         return ft.View(
             route="/statistics",
             controls=[
-                ft.AppBar(title=ft.Text("Статистика"), bgcolor=ft.colors.SURFACE_VARIANT),
+                ft.AppBar(title=ft.Text("Статистика"), bgcolor=ft.Colors.OUTLINE_VARIANT),
                 ft.Text("Статистика о количестве заработанных денег, количестве тренировок, клиентах и посещаемости.", size=20),
-                ft.Text("Скоро в приложении!", size=14, color=ft.colors.GREY_600),
+                ft.Text("Скоро в приложении!", size=14, color=ft.Colors.GREY_600),
                 ft.ElevatedButton("Назад", on_click=lambda _: self.page.views.pop() or self.page.update())
             ],
             padding=20,

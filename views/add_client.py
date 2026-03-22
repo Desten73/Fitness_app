@@ -8,7 +8,6 @@ class AddClientView:
         self.client_service = client_service
         self.name_field = ft.TextField(label="Имя", autofocus=True)
         self.phone_field = ft.TextField(label="Телефон")
-        self.email_field = ft.TextField(label="Email")
         self.goals_field = ft.TextField(label="Цели (через запятую)")
         self.notes_field = ft.TextField(label="Заметки", multiline=True)
 
@@ -16,10 +15,9 @@ class AddClientView:
         return ft.View(
             route="/add_client",
             controls=[
-                ft.AppBar(title=ft.Text("Добавить клиента"), bgcolor=ft.colors.SURFACE_VARIANT),
+                ft.AppBar(title=ft.Text("Добавить клиента"), bgcolor=ft.Colors.OUTLINE_VARIANT),
                 self.name_field,
                 self.phone_field,
-                self.email_field,
                 self.goals_field,
                 self.notes_field,
                 ft.Row(
@@ -46,7 +44,6 @@ class AddClientView:
         client = Client(
             name=self.name_field.value,
             phone=self.phone_field.value,
-            email=self.email_field.value or "",
             goals=goals,
             notes=self.notes_field.value or ""
         )

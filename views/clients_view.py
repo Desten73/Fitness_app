@@ -31,7 +31,7 @@ class ClientsView:
         view = ft.View(
             route="/clients",
             controls=[
-                ft.AppBar(title=ft.Text("Клиенты"), bgcolor=ft.colors.SURFACE_VARIANT),
+                ft.AppBar(title=ft.Text("Клиенты"), bgcolor=ft.Colors.OUTLINE_VARIANT),
                 title,
                 ft.Row([search_field]),
                 self.clients_list,

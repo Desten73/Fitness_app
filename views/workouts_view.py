@@ -9,7 +9,7 @@ class WorkoutsView:
         self.workouts_list = ft.ListView(expand=1, spacing=10, padding=10)
 
     def build(self) -> ft.View:
-        add_button = ft.ElevatedButton(
+        add_button = ft.Button(
             "Добавить тренировку",
             icon=ft.Icons.ADD,
             on_click=self.add_workout_click
@@ -18,7 +18,7 @@ class WorkoutsView:
         view = ft.View(
             route="/workouts",
             controls=[
-                ft.AppBar(title=ft.Text("Тренировки"), bgcolor=ft.colors.SURFACE_VARIANT),
+                ft.AppBar(title=ft.Text("Тренировки"), bgcolor=ft.Colors.OUTLINE_VARIANT),
                 ft.Row([add_button], alignment=ft.MainAxisAlignment.CENTER),
                 self.workouts_list,
             ],

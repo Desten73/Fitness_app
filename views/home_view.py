@@ -33,7 +33,7 @@ class HomeView:
 
         buttons_column = ft.Column(
             [
-                ft.ElevatedButton(
+                ft.Button(
                     content=ft.Row(
                         [
                             ft.Icon(icon),

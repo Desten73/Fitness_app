@@ -1,7 +1,7 @@
 import flet as ft
 from business_logic.client_service import ClientService
 
-class MainView:
+class ClientsView:
     def __init__(self, page: ft.Page, client_service: ClientService):
         self.page = page
         self.client_service = client_service
@@ -10,7 +10,7 @@ class MainView:
     def build(self) -> ft.View:
         # Кнопка добавления клиента
         add_button = ft.FloatingActionButton(
-            icon=ft.Icons.ADD,
+            icon=ft.icons.ADD,
             on_click=self.add_client_click
         )
 
@@ -29,8 +29,9 @@ class MainView:
 
         # Собираем экран
         view = ft.View(
-            "/",
+            "/clients",
             [
+                ft.AppBar(title=ft.Text("Клиенты"), bgcolor=ft.colors.SURFACE_VARIANT),
                 title,
                 ft.Row([search_field]),
                 self.clients_list,
@@ -49,18 +50,38 @@ class MainView:
         else:
             clients = self.client_service.get_all_clients()
 
-        for client in clients:
+        # Разделяем на активных и архивных
+        active_clients = [c for c in clients if not c.is_archived]
+        archived_clients = [c for c in clients if c.is_archived]
+
+        for client in active_clients:
             self.clients_list.controls.append(
                 ft.ListTile(
                     title=ft.Text(client.name),
                     subtitle=ft.Text(client.phone),
                     on_click=lambda e, c=client: self.open_client_details(c),
                     trailing=ft.IconButton(
-                        icon=ft.icons.Icons.DELETE,
+                        icon=ft.icons.DELETE,
                         on_click=lambda e, c=client: self.delete_client_click(c)
                     ),
                 )
             )
+
+        if archived_clients:
+            self.clients_list.controls.append(ft.Divider())
+            for client in archived_clients:
+                self.clients_list.controls.append(
+                    ft.ListTile(
+                        title=ft.Text(client.name, color=ft.colors.GREY_500),
+                        subtitle=ft.Text(client.phone, color=ft.colors.GREY_500),
+                        on_click=lambda e, c=client: self.open_client_details(c),
+                        trailing=ft.IconButton(
+                            icon=ft.icons.DELETE,
+                            on_click=lambda e, c=client: self.delete_client_click(c),
+                            icon_color=ft.colors.GREY_500
+                        ),
+                    )
+                )
         self.page.update()
 
     def add_client_click(self, e):
@@ -77,7 +98,7 @@ class MainView:
     def delete_client_click(self, client):
         def confirm_delete(e):
             self.client_service.delete_client(client.doc_id)
-            self.page.views.pop()  # закрываем диалог
+            self.page.dialog.open = False
             self.refresh_list()
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Клиент {client.name} удалён"))
             self.page.snack_bar.open = True

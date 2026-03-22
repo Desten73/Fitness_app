@@ -3,13 +3,17 @@ from .db_interface import ClientDatabaseInterface
 from typing import List, Optional
 
 class TinyDBClient(ClientDatabaseInterface):
-    def __init__(self, db_path: str = "clients_db.json"):
+    def __init__(self, db_path: str = "fitness_trainer.json"):
         self.db = TinyDB(db_path)
         self.clients_table = self.db.table("clients")
+        self.workouts_table = self.db.table("workouts")
         self.query = Query()
 
     def get_all_clients(self) -> List[dict]:
-        return self.clients_table.all()
+        clients = self.clients_table.all()
+        for client in clients:
+            client["doc_id"] = client.doc_id
+        return clients
 
     def get_client(self, doc_id: int) -> Optional[dict]:
         result = self.clients_table.get(doc_id=doc_id)
@@ -25,3 +29,12 @@ class TinyDBClient(ClientDatabaseInterface):
 
     def delete_client(self, doc_id: int) -> None:
         self.clients_table.remove(doc_id=doc_id)
+
+    def get_all_workouts(self) -> List[dict]:
+        workouts = self.workouts_table.all()
+        for workout in workouts:
+            workout["doc_id"] = workout.doc_id
+        return workouts
+
+    def add_workout(self, workout_data: dict) -> int:
+        return self.workouts_table.insert(workout_data)

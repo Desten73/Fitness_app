@@ -21,19 +21,19 @@ class HomeView:
         )
 
         # Разделяющая линия
-        divider = ft.Divider(height=1, color=ft.colors.GREY_400)
+        divider = ft.Divider(height=1, color=ft.Colors.GREY_400)
 
         # Список кнопок с иконками
         menu_buttons = [
-            ("Тренировки", ft.icons.FITNESS_CENTER, self.open_workouts),
-            ("Клиенты", ft.icons.PEOPLE, self.open_clients),
-            ("Календарь тренировок", ft.icons.CALENDAR_MONTH, self.open_calendar),
-            ("Статистика", ft.icons.QUERY_STATS, self.open_statistics),
+            ("Тренировки", ft.Icons.FITNESS_CENTER, self.open_workouts),
+            ("Клиенты", ft.Icons.PEOPLE, self.open_clients),
+            ("Календарь тренировок", ft.Icons.CALENDAR_MONTH, self.open_calendar),
+            ("Статистика", ft.Icons.QUERY_STATS, self.open_statistics),
         ]
 
         buttons_column = ft.Column(
             [
-                ft.ElevatedButton(
+                ft.Button(
                     content=ft.Row(
                         [
                             ft.Icon(icon),

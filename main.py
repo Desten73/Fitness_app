@@ -8,7 +8,7 @@ from views.home_view import HomeView
 def main(page: ft.Page):
     # Настройки страницы
     page.title = "Fitness Trainer"
-    page.theme_mode = ft.ThemeMode.LIGHT
+    # page.theme_mode = ft.ThemeMode.LIGHT
     page.padding = 20
 
     # Инициализация базы данных и сервисов
@@ -34,4 +34,4 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.run(main)

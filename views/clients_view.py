@@ -79,14 +79,14 @@ class ClientsView:
                 remaining = self.client_service.get_total_remaining_workouts(client, client_workouts)
                 self.clients_list.controls.append(
                     ft.ListTile(
-                        title=ft.Text(client.name, color=ft.colors.GREY_500),
-                        subtitle=ft.Text(f"{client.phone}\nОсталось тренировок - {remaining}", color=ft.colors.GREY_500),
+                        title=ft.Text(client.name, color=ft.Colors.GREY_500),
+                        subtitle=ft.Text(f"{client.phone}\nОсталось тренировок - {remaining}", color=ft.Colors.GREY_500),
                         is_three_line=True,
                         on_click=lambda e, c=client: self.open_client_details(c),
                         trailing=ft.IconButton(
                             icon=ft.Icons.DELETE,
                             on_click=lambda e, c=client: self.delete_client_click(c),
-                            icon_color=ft.colors.GREY_500
+                            icon_color=ft.Colors.GREY_500
                         ),
                     )
                 )

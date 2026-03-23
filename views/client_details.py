@@ -32,9 +32,14 @@ class ClientDetailsView:
 
     def build(self) -> ft.View:
         if not self.client:
-            return ft.View(route=f"/client_details/{self.client_id}", controls=[ft.AppBar(title=ft.Text("Клиент не найден")), ft.Text("Клиент не найден")])
+            return ft.View(
+                route=f"/client_details/{self.client_id}",
+                controls=[ft.AppBar(title=ft.Text("Клиент не найден")), ft.Text("Клиент не найден")]
+            )
 
-        self.refresh_data_and_ui()
+        # Первичное заполнение данных
+        self.refresh_data()
+        self.rebuild_ui_controls()
 
         return ft.View(
             route=f"/client_details/{self.client_id}",
@@ -55,18 +60,20 @@ class ClientDetailsView:
             ]
         )
 
-    def refresh_data_and_ui(self):
+    def refresh_data(self):
+        """Обновляет данные из сервисов"""
         self.client = self.client_service.get_client(self.client_id)
-        if not self.client: return
+        if self.client:
+            self.client_workouts = self.workout_service.get_client_workouts(self.client_id)
+            self.remaining_map = self.client_service.calculate_remaining_workouts(self.client, self.client_workouts)
 
-        self.client_workouts = self.workout_service.get_client_workouts(self.client_id)
-        self.remaining_map = self.client_service.calculate_remaining_workouts(self.client, self.client_workouts)
+    def rebuild_ui_controls(self):
+        """Пересобирает содержимое контейнеров без вызова .update()"""
+        self.build_info_controls()
+        self.build_packages_controls()
+        self.build_history_controls()
 
-        self.update_info_ui()
-        self.update_packages_ui()
-        self.update_history_ui()
-
-    def update_info_ui(self):
+    def build_info_controls(self):
         self.info_container.controls.clear()
         if self.edit_mode:
             self.name_field.value = self.client.name
@@ -101,10 +108,8 @@ class ClientDetailsView:
                 ft.Text(f"Статус: {'Архивный' if self.client.is_archived else 'Активный'}",
                         color=ft.Colors.GREY_500 if self.client.is_archived else ft.Colors.GREEN),
             ])
-        if self.info_container.page:
-            self.info_container.update()
 
-    def update_packages_ui(self):
+    def build_packages_controls(self):
         self.packages_container.controls.clear()
         self.packages_container.controls.append(ft.Text("Пакеты тренировок", size=18, weight=ft.FontWeight.BOLD))
 
@@ -125,10 +130,8 @@ class ClientDetailsView:
                 ft.ElevatedButton("Добавить пакет", on_click=self.add_package, icon=ft.Icons.ADD)
             ])
         )
-        if self.packages_container.page:
-            self.packages_container.update()
 
-    def update_history_ui(self):
+    def build_history_controls(self):
         self.history_container.controls.clear()
         self.history_container.controls.append(ft.Text("История тренировок", size=18, weight=ft.FontWeight.BOLD))
 
@@ -147,12 +150,10 @@ class ClientDetailsView:
         if not sorted_workouts:
             self.history_container.controls.append(ft.Text("Тренировок пока не было", italic=True))
 
-        if self.history_container.page:
-            self.history_container.update()
-
     def toggle_edit(self, e):
         self.edit_mode = not self.edit_mode
-        self.update_info_ui()
+        self.rebuild_ui_controls()
+        self.page.update()
 
     def save_changes(self, e):
         self.client.name = self.name_field.value
@@ -164,7 +165,8 @@ class ClientDetailsView:
 
         self.client_service.update_client(self.client)
         self.edit_mode = False
-        self.refresh_data_and_ui()
+        self.refresh_data()
+        self.rebuild_ui_controls()
         self.page.snack_bar = ft.SnackBar(ft.Text("Данные обновлены"))
         self.page.snack_bar.open = True
         self.page.update()
@@ -182,12 +184,16 @@ class ClientDetailsView:
         self.client_service.update_client(self.client)
         self.new_pkg_count.value = ""
         self.new_pkg_price.value = ""
-        self.refresh_data_and_ui()
+        self.refresh_data()
+        self.rebuild_ui_controls()
+        self.page.update()
 
     def delete_package(self, index):
         self.client.packages.pop(index)
         self.client_service.update_client(self.client)
-        self.refresh_data_and_ui()
+        self.refresh_data()
+        self.rebuild_ui_controls()
+        self.page.update()
 
     def delete_client_click(self, e):
         def confirm_delete(ev):

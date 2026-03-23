@@ -118,7 +118,9 @@ class ClientsView:
                 ft.TextButton("Удалить", on_click=confirm_delete)
             ]
         )
-        self.page.show_dialog(dlg)
+        self.page.dialog = dlg
+        dlg.open = True
+        self.page.update()
 
     def close_dialog(self, e, dlg):
         dlg.open = False

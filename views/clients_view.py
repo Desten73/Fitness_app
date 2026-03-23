@@ -106,6 +106,7 @@ class ClientsView:
             self.page.update()
             self.refresh_list()
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Клиент {client.name} удалён"))
+            self.page.overlay.append(self.page.snack_bar)
             self.page.snack_bar.open = True
             self.page.update()
 
@@ -118,8 +119,7 @@ class ClientsView:
                 ft.TextButton("Удалить", on_click=confirm_delete)
             ]
         )
-        self.page.dialog = dlg
-        dlg.open = True
+        self.page.show_dialog(dlg)
         self.page.update()
 
     def close_dialog(self, e, dlg):

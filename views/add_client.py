@@ -2,6 +2,7 @@ import flet as ft
 from models.client import Client
 from business_logic.client_service import ClientService
 
+
 class AddClientView:
     def __init__(self, page: ft.Page, client_service: ClientService):
         self.page = page
@@ -37,6 +38,7 @@ class AddClientView:
         # Валидация
         if not self.name_field.value or not self.phone_field.value:
             self.page.snack_bar = ft.SnackBar(ft.Text("Имя и телефон обязательны"))
+            self.page.overlay.append(self.page.snack_bar)
             self.page.snack_bar.open = True
             self.page.update()
             return
@@ -51,11 +53,12 @@ class AddClientView:
             notes=self.notes_field.value or ""
         )
         self.client_service.add_client(client)
-        self.page.views.pop()  # возвращаемся на главный экран
+        self.page.go("/clients")
         self.page.snack_bar = ft.SnackBar(ft.Text("Клиент добавлен"))
+        self.page.overlay.append(self.page.snack_bar)
         self.page.snack_bar.open = True
         self.page.update()
 
     def cancel(self, e):
-        self.page.views.pop()
+        self.page.go("/clients")
         self.page.update()

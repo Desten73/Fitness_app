@@ -168,6 +168,7 @@ class ClientDetailsView:
         self.refresh_data()
         self.rebuild_ui_controls()
         self.page.snack_bar = ft.SnackBar(ft.Text("Данные обновлены"))
+        self.page.overlay.append(self.page.snack_bar)
         self.page.snack_bar.open = True
         self.page.update()
 
@@ -200,6 +201,7 @@ class ClientDetailsView:
             self.client_service.delete_client(self.client_id)
             dlg.open = False
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Клиент {self.client.name} удалён"))
+            self.page.overlay.append(self.page.snack_bar)
             self.page.snack_bar.open = True
             # Навигация назад к списку клиентов
             self.page.go("/clients")
@@ -212,8 +214,7 @@ class ClientDetailsView:
                 ft.TextButton("Удалить", on_click=confirm_delete)
             ]
         )
-        self.page.dialog = dlg
-        dlg.open = True
+        self.page.show_dialog(dlg)
         self.page.update()
 
     def close_dialog(self, e, dlg):

@@ -1,5 +1,6 @@
-from typing import List
-from models.client import Client
+from typing import List, Dict
+from models.client import Client, WorkoutPackage
+from models.workout import Workout
 from database.db_interface import ClientDatabaseInterface
 
 class ClientService:
@@ -58,3 +59,35 @@ class ClientService:
         if client:
             client.is_archived = False
             self.update_client(client)
+
+    def calculate_remaining_workouts(self, client: Client, client_workouts: List[Workout]) -> Dict[int, int]:
+        """
+        Рассчитывает количество оставшихся тренировок для каждого пакета клиента.
+        Возвращает словарь {индекс_пакета: остаток}.
+        """
+        # Сортируем пакеты по дате покупки (старые первыми)
+        packages_with_indices = sorted(
+            enumerate(client.packages),
+            key=lambda x: x[1].purchase_date
+        )
+
+        # Берем только завершенные тренировки клиента
+        completed_workouts = [w for w in client_workouts if w.status == "завершено"]
+        # Сортируем тренировки по дате и времени (старые первыми)
+        completed_workouts.sort(key=lambda w: (w.date, w.time))
+
+        remaining = {i: p.total_workouts for i, p in enumerate(client.packages)}
+
+        for workout in completed_workouts:
+            # Находим самый старый пакет, купленный до или в день тренировки, в котором еще есть тренировки
+            for idx, package in packages_with_indices:
+                if package.purchase_date <= workout.date and remaining[idx] > 0:
+                    remaining[idx] -= 1
+                    break
+
+        return remaining
+
+    def get_total_remaining_workouts(self, client: Client, client_workouts: List[Workout]) -> int:
+        """Возвращает общее количество оставшихся тренировок по всем пакетам"""
+        remaining = self.calculate_remaining_workouts(client, client_workouts)
+        return sum(remaining.values())

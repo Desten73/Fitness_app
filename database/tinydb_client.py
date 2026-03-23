@@ -11,30 +11,38 @@ class TinyDBClient(ClientDatabaseInterface):
 
     def get_all_clients(self) -> List[dict]:
         clients = self.clients_table.all()
+        result = []
         for client in clients:
-            client["doc_id"] = client.doc_id
-        return clients
+            client_dict = dict(client)
+            client_dict["doc_id"] = client.doc_id
+            result.append(client_dict)
+        return result
 
     def get_client(self, doc_id: int) -> Optional[dict]:
-        result = self.clients_table.get(doc_id=doc_id)
-        if result:
-            result["doc_id"] = doc_id
-        return result
+        client = self.clients_table.get(doc_id=doc_id)
+        if client:
+            client_dict = dict(client)
+            client_dict["doc_id"] = client.doc_id
+            return client_dict
+        return None
 
     def add_client(self, client_data: dict) -> int:
         return self.clients_table.insert(client_data)
 
     def update_client(self, doc_id: int, client_data: dict) -> None:
-        self.clients_table.update(client_data, doc_id=doc_id)
+        self.clients_table.update(client_data, doc_ids=[doc_id])
 
     def delete_client(self, doc_id: int) -> None:
-        self.clients_table.remove(doc_id=doc_id)
+        self.clients_table.remove(doc_ids=[doc_id])
 
     def get_all_workouts(self) -> List[dict]:
         workouts = self.workouts_table.all()
+        result = []
         for workout in workouts:
-            workout["doc_id"] = workout.doc_id
-        return workouts
+            w_dict = dict(workout)
+            w_dict["doc_id"] = workout.doc_id
+            result.append(w_dict)
+        return result
 
     def add_workout(self, workout_data: dict) -> int:
         return self.workouts_table.insert(workout_data)

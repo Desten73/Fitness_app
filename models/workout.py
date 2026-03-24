@@ -9,7 +9,8 @@ class Workout:
     date: date
     time: time
     price: int
-    status: str  # завершено, отменено, планируется, подтверждено
+    status: str  # Планируется, Подтверждена, Проведена, Отменена
+    is_paid: bool = False
     doc_id: Optional[int] = None
 
     def to_dict(self) -> dict:
@@ -18,7 +19,8 @@ class Workout:
             "date": self.date.isoformat(),
             "time": self.time.isoformat(),
             "price": self.price,
-            "status": self.status
+            "status": self.status,
+            "is_paid": self.is_paid
         }
         if self.doc_id is not None:
             data["doc_id"] = self.doc_id
@@ -32,5 +34,6 @@ class Workout:
             time=time.fromisoformat(data["time"]),
             price=data["price"],
             status=data["status"],
+            is_paid=data.get("is_paid", False),
             doc_id=data.get("doc_id")
         )

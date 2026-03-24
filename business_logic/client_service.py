@@ -72,7 +72,7 @@ class ClientService:
         )
 
         # Берем только завершенные тренировки клиента
-        completed_workouts = [w for w in client_workouts if w.status == "завершено"]
+        completed_workouts = [w for w in client_workouts if w.status in ["завершено", "Проведена"]]
         # Сортируем тренировки по дате и времени (старые первыми)
         completed_workouts.sort(key=lambda w: (w.date, w.time))
 

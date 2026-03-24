@@ -3,7 +3,6 @@ from business_logic.workout_service import WorkoutService
 from models.workout import Workout
 from datetime import datetime, date, time
 
-
 class WorkoutsView:
     def __init__(self, page: ft.Page, workout_service: WorkoutService, client_service):
         self.page = page
@@ -112,8 +111,7 @@ class WorkoutsView:
                                 [
                                     ft.Icon(payment_icon, color=payment_color),
                                     ft.IconButton(ft.Icons.EDIT, on_click=lambda e: self.edit_workout(w)),
-                                    ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED,
-                                                  on_click=lambda e: self.delete_workout(w)),
+                                    ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED, on_click=lambda e: self.delete_workout(w)),
                                 ],
                                 tight=True,
                             ),
@@ -135,20 +133,18 @@ class WorkoutsView:
     def delete_workout(self, workout: Workout):
         def confirm_delete(e):
             self.workout_service.delete_workout(workout.doc_id)
-            self.page.pop_dialog()
+            self.page.close(dialog)
             self.refresh_list(self.search_field.value)
 
         dialog = ft.AlertDialog(
             title=ft.Text("Подтверждение удаления"),
-            content=ft.Text(f"Вы уверены, что хотите удалить тренировку "
-                            f"{workout.date.strftime('%d.%m.%Y')} "
-                            f"{workout.time.strftime('%H:%M')}?"),
+            content=ft.Text(f"Вы уверены, что хотите удалить тренировку {workout.date.strftime('%d.%m.%Y')}?"),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda e: self.page.pop_dialog()),
-                ft.TextButton("Удалить", on_click=confirm_delete),
+                ft.TextButton("Отмена", on_click=lambda e: self.page.close(dialog)),
+                ft.TextButton("Удалить", on_click=confirm_delete, color=ft.Colors.RED),
             ],
         )
-        self.page.show_dialog(dialog)
+        self.page.open(dialog)
 
     def show_workout_dialog(self, workout: Workout = None):
         clients = self.client_service.get_all_clients()
@@ -166,23 +162,25 @@ class WorkoutsView:
             ],
             value=workout.status if workout else "Планируется"
         )
+
         client_dropdown = ft.Dropdown(
             label="Клиент",
             options=client_options,
             value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-            on_select=lambda e: self.on_client_select(e, price_field, active_clients)
+            on_change=lambda e: self.on_client_select(e, price_field, active_clients)
         )
 
         date_val = workout.date if workout else date.today()
         date_button = ft.ElevatedButton(
             date_val.strftime("%d.%m.%Y"),
             icon=ft.Icons.CALENDAR_MONTH,
-            on_click=lambda e: self.page.show_dialog(date_picker)
+            on_click=lambda e: self.page.open(date_picker)
         )
 
         def on_date_change(e):
-            date_button.text = date_picker.value.strftime("%d.%m.%Y")
-            date_button.update()
+            if e.control.value:
+                date_button.text = e.control.value.strftime("%d.%m.%Y")
+                date_button.update()
 
         date_picker = ft.DatePicker(
             value=date_val,
@@ -205,7 +203,6 @@ class WorkoutsView:
         def save_click(e):
             if not client_dropdown.value:
                 self.page.snack_bar = ft.SnackBar(ft.Text("Выберите клиента"))
-                self.page.overlay.append(self.page.snack_bar)
                 self.page.snack_bar.open = True
                 self.page.update()
                 return
@@ -215,14 +212,17 @@ class WorkoutsView:
                 workout_time = time(int(t_parts[0]), int(t_parts[1]))
             except:
                 self.page.snack_bar = ft.SnackBar(ft.Text("Неверный формат времени"))
-                self.page.overlay.append(self.page.snack_bar)
                 self.page.snack_bar.open = True
                 self.page.update()
                 return
 
+            selected_date = date_picker.value if date_picker.value else date_val
+            if isinstance(selected_date, datetime):
+                selected_date = selected_date.date()
+
             new_workout = Workout(
                 client_ids=[int(client_dropdown.value)],
-                date=date_picker.value if date_picker.value else date_val,
+                date=selected_date,
                 time=workout_time,
                 price=int(price_field.value or 0),
                 status=status_dropdown.value,
@@ -235,7 +235,7 @@ class WorkoutsView:
             else:
                 self.workout_service.add_workout(new_workout)
 
-            self.page.pop_dialog()
+            self.page.close(dialog)
             self.refresh_list(self.search_field.value)
 
         dialog = ft.AlertDialog(
@@ -254,12 +254,12 @@ class WorkoutsView:
                 scroll=ft.ScrollMode.AUTO
             ),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda e: self.page.pop_dialog()),
+                ft.TextButton("Отмена", on_click=lambda e: self.page.close(dialog)),
                 ft.TextButton("Сохранить", on_click=save_click),
             ],
         )
 
-        self.page.show_dialog(dialog)
+        self.page.open(dialog)
 
     def on_client_select(self, e, price_field, clients):
         client_id = int(e.control.value)

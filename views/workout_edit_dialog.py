@@ -47,14 +47,14 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         label="Клиент",
         options=client_options,
         value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-        on_select=on_client_select
+        on_change=on_client_select
     )
 
     date_val = workout.date if workout else date.today()
     date_button = ft.ElevatedButton(
         date_val.strftime("%d.%m.%Y"),
         icon=ft.Icons.CALENDAR_MONTH,
-        on_click=lambda e: page.show_dialog(date_picker)
+        on_click=lambda e: page.open(date_picker)
     )
 
     def on_date_change(e):
@@ -100,8 +100,6 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
 
         selected_date = date_picker.value if date_picker.value else date_val
         if isinstance(selected_date, datetime):
-            # В исходном коде было + timedelta(days=1). Сохраним это поведение, если оно было осознанным,
-            # но вообще это странно. Оставлю как было в workouts_view.py.
             selected_date = selected_date.date() + timedelta(days=1)
 
         new_workout = Workout(
@@ -119,9 +117,37 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         else:
             workout_service.add_workout(new_workout)
 
-        page.pop_dialog()
+        page.close(dialog)
         if on_save:
             on_save()
+
+    def delete_click(e):
+        def confirm_delete(e):
+            workout_service.delete_workout(workout.doc_id)
+            page.close(confirm_dlg)
+            page.close(dialog)
+            if on_save:
+                on_save()
+
+        confirm_dlg = ft.AlertDialog(
+            title=ft.Text("Подтверждение удаления"),
+            content=ft.Text(f"Вы уверены, что хотите удалить тренировку "
+                            f"{workout.date.strftime('%d.%m.%Y')} "
+                            f"{workout.time.strftime('%H:%M')}?"),
+            actions=[
+                ft.TextButton("Отмена", on_click=lambda e: page.close(confirm_dlg)),
+                ft.TextButton("Удалить", on_click=confirm_delete, font_color=ft.Colors.RED),
+            ],
+        )
+        page.open(confirm_dlg)
+
+    actions = [
+        ft.TextButton("Отмена", on_click=lambda e: page.close(dialog)),
+        ft.TextButton("Сохранить", on_click=save_click),
+    ]
+
+    if workout:
+        actions.insert(0, ft.TextButton("Удалить", on_click=delete_click, font_color=ft.Colors.RED))
 
     dialog = ft.AlertDialog(
         title=ft.Text("Тренировка"),
@@ -138,10 +164,7 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
             tight=True,
             scroll=ft.ScrollMode.AUTO
         ),
-        actions=[
-            ft.TextButton("Отмена", on_click=lambda e: page.pop_dialog()),
-            ft.TextButton("Сохранить", on_click=save_click),
-        ],
+        actions=actions,
     )
-    page.show_dialog(dialog)
+    page.open(dialog)
     page.update()

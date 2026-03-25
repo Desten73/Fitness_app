@@ -3,6 +3,7 @@ import calendar
 from datetime import datetime, date
 from business_logic.workout_service import WorkoutService
 from business_logic.client_service import ClientService
+from views.workout_edit_dialog import show_workout_dialog
 
 class CalendarView:
     def __init__(self, page: ft.Page, client_service: ClientService, workout_service: WorkoutService):
@@ -17,6 +18,12 @@ class CalendarView:
     def build(self) -> ft.View:
         self.refresh_calendar()
 
+        add_button = ft.ElevatedButton(
+            "Добавить тренировку",
+            icon=ft.Icons.ADD,
+            on_click=self.add_workout_click
+        )
+
         return ft.View(
             route="/calendar",
             controls=[
@@ -24,6 +31,7 @@ class CalendarView:
                     title=ft.Text("Календарь тренировок"),
                     bgcolor=ft.Colors.OUTLINE_VARIANT,
                 ),
+                ft.Row([add_button], alignment=ft.MainAxisAlignment.CENTER),
                 ft.Row(
                     [
                         ft.IconButton(ft.Icons.CHEVRON_LEFT, on_click=self.prev_month),
@@ -100,7 +108,7 @@ class CalendarView:
                                 padding=2,
                                 border_radius=4,
                                 bgcolor=ft.Colors.BLUE_50,
-                                on_click=lambda e, cid=w.client_ids[0] if w.client_ids else None: self.go_to_client(cid),
+                                on_click=lambda e, workout=w: self.edit_workout(workout),
                             )
                         )
 
@@ -123,7 +131,7 @@ class CalendarView:
                             border=ft.border.all(1, ft.Colors.GREY_300),
                             border_radius=8,
                             expand=True,
-                            # min_height=100,
+                            min_height=100,
                         )
                     )
             self.calendar_grid.controls.append(week_row)
@@ -146,6 +154,12 @@ class CalendarView:
         self.refresh_calendar()
         self.page.update()
 
-    def go_to_client(self, client_id):
-        if client_id:
-            self.page.go(f"/client_details/{client_id}")
+    def add_workout_click(self, e):
+        show_workout_dialog(self.page, self.workout_service, self.client_service, on_save=self.on_dialog_save)
+
+    def edit_workout(self, workout):
+        show_workout_dialog(self.page, self.workout_service, self.client_service, workout=workout, on_save=self.on_dialog_save)
+
+    def on_dialog_save(self):
+        self.refresh_calendar()
+        self.page.update()

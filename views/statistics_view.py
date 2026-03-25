@@ -16,6 +16,6 @@ class StatisticsView:
                 ft.ElevatedButton("Назад", on_click=lambda _: self.page.views.pop() or self.page.update())
             ],
             padding=20,
-            # alignment=ft.MainAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )

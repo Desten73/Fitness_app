@@ -47,14 +47,14 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         label="Клиент",
         options=client_options,
         value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-        on_change=on_client_select
+        on_select=on_client_select
     )
 
     date_val = workout.date if workout else date.today()
     date_button = ft.ElevatedButton(
         date_val.strftime("%d.%m.%Y"),
         icon=ft.Icons.CALENDAR_MONTH,
-        on_click=lambda e: page.open(date_picker)
+        on_click=lambda e: page.show_dialog(date_picker)
     )
 
     def on_date_change(e):
@@ -117,15 +117,15 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         else:
             workout_service.add_workout(new_workout)
 
-        page.close(dialog)
+        page.pop_dialog()
         if on_save:
             on_save()
 
     def delete_click(e):
         def confirm_delete(e):
             workout_service.delete_workout(workout.doc_id)
-            page.close(confirm_dlg)
-            page.close(dialog)
+            page.pop_dialog()
+            page.pop_dialog()
             if on_save:
                 on_save()
 
@@ -135,19 +135,19 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
                             f"{workout.date.strftime('%d.%m.%Y')} "
                             f"{workout.time.strftime('%H:%M')}?"),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda e: page.close(confirm_dlg)),
-                ft.TextButton("Удалить", on_click=confirm_delete, font_color=ft.Colors.RED),
+                ft.TextButton("Отмена", on_click=lambda e: page.pop_dialog()),
+                ft.TextButton("Удалить", on_click=confirm_delete),
             ],
         )
-        page.open(confirm_dlg)
+        page.show_dialog(confirm_dlg)
 
     actions = [
-        ft.TextButton("Отмена", on_click=lambda e: page.close(dialog)),
+        ft.TextButton("Отмена", on_click=lambda e: page.pop_dialog()),
         ft.TextButton("Сохранить", on_click=save_click),
     ]
 
     if workout:
-        actions.insert(0, ft.TextButton("Удалить", on_click=delete_click, font_color=ft.Colors.RED))
+        actions.insert(0, ft.TextButton("Удалить", on_click=delete_click))
 
     dialog = ft.AlertDialog(
         title=ft.Text("Тренировка"),
@@ -166,5 +166,5 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         ),
         actions=actions,
     )
-    page.open(dialog)
+    page.show_dialog(dialog)
     page.update()

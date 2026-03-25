@@ -131,7 +131,6 @@ class CalendarView:
                             border=ft.border.all(1, ft.Colors.GREY_300),
                             border_radius=8,
                             expand=True,
-                            min_height=100,
                         )
                     )
             self.calendar_grid.controls.append(week_row)
@@ -158,7 +157,8 @@ class CalendarView:
         show_workout_dialog(self.page, self.workout_service, self.client_service, on_save=self.on_dialog_save)
 
     def edit_workout(self, workout):
-        show_workout_dialog(self.page, self.workout_service, self.client_service, workout=workout, on_save=self.on_dialog_save)
+        show_workout_dialog(self.page, self.workout_service, self.client_service,
+                            workout=workout, on_save=self.on_dialog_save)
 
     def on_dialog_save(self):
         self.refresh_calendar()

@@ -9,7 +9,8 @@ class AddClientView:
         self.client_service = client_service
         self.name_field = ft.TextField(label="Имя", autofocus=True)
         self.phone_field = ft.TextField(label="Телефон")
-        self.price_field = ft.TextField(label="Стоимость тренировки", value="1000", input_filter=ft.NumbersOnlyInputFilter())
+        self.price_field = ft.TextField(label="Стоимость тренировки", value="1000",
+                                        input_filter=ft.NumbersOnlyInputFilter())
         self.goals_field = ft.TextField(label="Цели (через запятую)")
         self.notes_field = ft.TextField(label="Заметки", multiline=True)
 

@@ -138,7 +138,7 @@ class WorkoutsView:
     def delete_workout(self, workout: Workout):
         def confirm_delete(e):
             self.workout_service.delete_workout(workout.doc_id)
-            self.page.close(dialog)
+            self.page.pop_dialog()
             self.refresh_list(self.search_field.value)
 
         dialog = ft.AlertDialog(
@@ -147,8 +147,8 @@ class WorkoutsView:
                             f"{workout.date.strftime('%d.%m.%Y')} "
                             f"{workout.time.strftime('%H:%M')}?"),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda e: self.page.close(dialog)),
+                ft.TextButton("Отмена", on_click=lambda e: self.page.pop_dialog()),
                 ft.TextButton("Удалить", on_click=confirm_delete),
             ],
         )
-        self.page.open(dialog)
+        self.page.show_dialog(dialog)

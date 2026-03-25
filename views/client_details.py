@@ -209,7 +209,7 @@ class ClientDetailsView:
     def delete_client_click(self, e):
         def confirm_delete(ev):
             self.client_service.delete_client(self.client_id)
-            self.page.close(dlg)
+            self.page.pop_dialog()
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Клиент {self.client.name} удалён"))
             self.page.overlay.append(self.page.snack_bar)
             self.page.snack_bar.open = True
@@ -220,9 +220,9 @@ class ClientDetailsView:
             title=ft.Text("Удалить клиента?"),
             content=ft.Text(f"Вы уверены, что хотите полностью удалить {self.client.name}?"),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda ev: self.page.close(dlg)),
+                ft.TextButton("Отмена", on_click=lambda ev: self.page.pop_dialog()),
                 ft.TextButton("Удалить", on_click=confirm_delete)
             ]
         )
-        self.page.open(dlg)
+        self.page.show_dialog(dlg)
         self.page.update()

@@ -38,3 +38,13 @@ class ClientDatabaseInterface(ABC):
     def add_workout(self, workout_data: dict) -> int:
         """Добавляет тренировку"""
         pass
+
+    @abstractmethod
+    def update_workout(self, doc_id: int, workout_data: dict) -> None:
+        """Обновляет тренировку"""
+        pass
+
+    @abstractmethod
+    def delete_workout(self, doc_id: int) -> None:
+        """Удаляет тренировку"""
+        pass

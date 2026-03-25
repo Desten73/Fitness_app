@@ -46,3 +46,9 @@ class TinyDBClient(ClientDatabaseInterface):
 
     def add_workout(self, workout_data: dict) -> int:
         return self.workouts_table.insert(workout_data)
+
+    def update_workout(self, doc_id: int, workout_data: dict) -> None:
+        self.workouts_table.update(workout_data, doc_ids=[doc_id])
+
+    def delete_workout(self, doc_id: int) -> None:
+        self.workouts_table.remove(doc_ids=[doc_id])

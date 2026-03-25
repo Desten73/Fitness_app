@@ -138,7 +138,7 @@ class ClientDetailsView:
         sorted_workouts = sorted(self.client_workouts, key=lambda w: (w.date, w.time), reverse=True)
 
         for w in sorted_workouts:
-            is_dimmed = w.status != "завершено"
+            is_dimmed = w.status not in ["завершено", "Проведена"]
             color = ft.Colors.GREY_500 if is_dimmed else ft.Colors.BLACK
             self.history_container.controls.append(
                 ft.ListTile(

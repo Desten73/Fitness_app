@@ -8,6 +8,12 @@ class HomeView:
         self.workout_service = workout_service
 
     def build(self) -> ft.View:
+        # Ищем существующий Share или создаем новый, чтобы избежать дублирования в overlay
+        share = next((c for c in self.page.overlay if isinstance(c, ft.Share)), None)
+        if not share:
+            share = ft.Share()
+            self.page.overlay.append(share)
+
         now = datetime.now()
         current_date = now.strftime("%d.%m")
 
@@ -51,8 +57,31 @@ class HomeView:
                 for text, icon, route in menu_buttons
             ],
             spacing=20,
-            alignment=ft.MainAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.START,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+
+        async def export_db(e):
+            try:
+                await share.share_files([ft.ShareFile.from_path("fitness_trainer.json")])
+                self.page.open(ft.SnackBar(ft.Text("База данных готова к отправке")))
+            except Exception as ex:
+                self.page.open(ft.SnackBar(ft.Text(f"Ошибка при выгрузке: {str(ex)}")))
+
+        export_button = ft.OutlinedButton(
+            content=ft.Row(
+                [
+                    ft.Icon(ft.Icons.FILE_DOWNLOAD),
+                    ft.Text("Выгрузить БД", size=18)
+                ],
+                alignment=ft.MainAxisAlignment.CENTER
+            ),
+            on_click=export_db,
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=10),
+            ),
+            width=400,
+            height=60
         )
 
         view = ft.View(
@@ -60,8 +89,16 @@ class HomeView:
             controls=[
                 header,
                 divider,
-                ft.Container(height=40),
-                buttons_column,
+                ft.Column(
+                    [
+                        ft.Container(height=20),
+                        buttons_column,
+                        ft.Container(expand=True),
+                        export_button,
+                    ],
+                    expand=True,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                )
             ],
             padding=20,
             vertical_alignment=ft.MainAxisAlignment.START

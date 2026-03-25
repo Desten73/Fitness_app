@@ -47,14 +47,14 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         label="Клиент",
         options=client_options,
         value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-        on_change=on_client_select
+        on_select=on_client_select
     )
 
     date_val = workout.date if workout else date.today()
     date_button = ft.ElevatedButton(
         date_val.strftime("%d.%m.%Y"),
         icon=ft.Icons.CALENDAR_MONTH,
-        on_click=lambda e: page.open(date_picker)
+        on_click=lambda e: page.show_dialog(date_picker)
     )
 
     def on_date_change(e):
@@ -119,7 +119,7 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
         else:
             workout_service.add_workout(new_workout)
 
-        page.close(dialog)
+        page.pop_dialog()
         if on_save:
             on_save()
 
@@ -139,9 +139,9 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
             scroll=ft.ScrollMode.AUTO
         ),
         actions=[
-            ft.TextButton("Отмена", on_click=lambda e: page.close(dialog)),
+            ft.TextButton("Отмена", on_click=lambda e: page.pop_dialog()),
             ft.TextButton("Сохранить", on_click=save_click),
         ],
     )
-    page.open(dialog)
+    page.show_dialog(dialog)
     page.update()

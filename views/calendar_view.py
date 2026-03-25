@@ -123,7 +123,7 @@ class CalendarView:
                             border=ft.border.all(1, ft.Colors.GREY_300),
                             border_radius=8,
                             expand=True,
-                            min_height=100,
+                            # min_height=100,
                         )
                     )
             self.calendar_grid.controls.append(week_row)

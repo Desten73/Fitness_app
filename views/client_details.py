@@ -3,6 +3,7 @@ from datetime import date
 from models.client import Client, WorkoutPackage
 from business_logic.client_service import ClientService
 from business_logic.workout_service import WorkoutService
+from views.workout_edit_dialog import show_workout_dialog
 
 class ClientDetailsView:
     def __init__(self, page: ft.Page, client_service: ClientService, workout_service: WorkoutService, client_id: int):
@@ -111,7 +112,7 @@ class ClientDetailsView:
 
     def build_packages_controls(self):
         self.packages_container.controls.clear()
-        self.packages_container.controls.append(ft.Text("Пакеты тренировок", size=18, weight=ft.FontWeight.BOLD))
+        self.packages_container.controls.append(ft.Text("Пакеты тренировк", size=18, weight=ft.FontWeight.BOLD))
 
         for i, pkg in enumerate(self.client.packages):
             rem = self.remaining_map.get(i, 0)
@@ -144,11 +145,20 @@ class ClientDetailsView:
                 ft.ListTile(
                     title=ft.Text(f"{w.date} {w.time}", color=color),
                     subtitle=ft.Text(f"Статус: {w.status}, Цена: {w.price}", color=color),
+                    on_click=lambda e, workout=w: self.edit_workout(workout)
                 )
             )
 
         if not sorted_workouts:
             self.history_container.controls.append(ft.Text("Тренировок пока не было", italic=True))
+
+    def edit_workout(self, workout):
+        def on_save():
+            self.refresh_data()
+            self.rebuild_ui_controls()
+            self.page.update()
+
+        show_workout_dialog(self.page, self.workout_service, self.client_service, workout=workout, on_save=on_save)
 
     def toggle_edit(self, e):
         self.edit_mode = not self.edit_mode
@@ -199,7 +209,7 @@ class ClientDetailsView:
     def delete_client_click(self, e):
         def confirm_delete(ev):
             self.client_service.delete_client(self.client_id)
-            dlg.open = False
+            self.page.pop_dialog()
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Клиент {self.client.name} удалён"))
             self.page.overlay.append(self.page.snack_bar)
             self.page.snack_bar.open = True
@@ -210,13 +220,9 @@ class ClientDetailsView:
             title=ft.Text("Удалить клиента?"),
             content=ft.Text(f"Вы уверены, что хотите полностью удалить {self.client.name}?"),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda ev: self.close_dialog(ev, dlg)),
+                ft.TextButton("Отмена", on_click=lambda ev: self.page.pop_dialog()),
                 ft.TextButton("Удалить", on_click=confirm_delete)
             ]
         )
         self.page.show_dialog(dlg)
-        self.page.update()
-
-    def close_dialog(self, e, dlg):
-        dlg.open = False
         self.page.update()

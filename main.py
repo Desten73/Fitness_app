@@ -29,7 +29,7 @@ def main(page: ft.Page):
             page.views.append(ClientsView(page, client_service, workout_service).build())
         elif page.route == "/calendar":
             from views.calendar_view import CalendarView
-            page.views.append(CalendarView(page).build())
+            page.views.append(CalendarView(page, client_service, workout_service).build())
         elif page.route == "/statistics":
             from views.statistics_view import StatisticsView
             page.views.append(StatisticsView(page, client_service, workout_service).build())

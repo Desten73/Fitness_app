@@ -106,15 +106,19 @@ class WorkoutsView:
                         ft.ListTile(
                             leading=ft.Icon(status_icon),
                             title=ft.Text(f"{w.date.strftime('%d.%m.%Y')} {w.time.strftime('%H:%M')}"),
-                            subtitle=ft.Text(f"Клиент: {client_names_str}\nЦена: {w.price} руб.\nСтатус: {w.status}"),
+                            # subtitle=ft.Text(f"Клиент: {client_names_str}\nЦена: {w.price} руб.\nСтатус: {w.status}"),
+                            subtitle=ft.Text(f"{client_names_str}\n{w.price} руб.\n{w.status}"),
                             trailing=ft.Row(
                                 [
                                     ft.Icon(payment_icon, color=payment_color),
-                                    ft.IconButton(ft.Icons.EDIT, on_click=lambda e: self.edit_workout(w)),
-                                    ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED, on_click=lambda e: self.delete_workout(w)),
+                                    # ft.IconButton(ft.Icons.EDIT, on_click=lambda e: self.edit_workout(w)),
+                                    ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED,
+                                                  on_click=lambda e: self.delete_workout(w)),
                                 ],
                                 tight=True,
+                                alignment=ft.MainAxisAlignment.CENTER,
                             ),
+                            on_click=lambda e: self.edit_workout(w),
                         ),
                     ],
                     spacing=0,
@@ -169,7 +173,7 @@ class WorkoutsView:
             label="Клиент",
             options=client_options,
             value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-            on_select=lambda e: self.on_client_select(e, price_field, active_clients)
+            on_select=lambda e: self.on_client_select(e, price_field, active_clients, paid_checkbox)
         )
 
         date_val = workout.date if workout else date.today()
@@ -220,9 +224,9 @@ class WorkoutsView:
                 self.page.update()
                 return
 
-            selected_date = date_picker.value + timedelta(days=1) if date_picker.value else date_val
+            selected_date = date_picker.value if date_picker.value else date_val
             if isinstance(selected_date, datetime):
-                selected_date = selected_date.date()
+                selected_date = selected_date.date() + timedelta(days=1)
 
             new_workout = Workout(
                 client_ids=[int(client_dropdown.value)],
@@ -262,13 +266,18 @@ class WorkoutsView:
                 ft.TextButton("Сохранить", on_click=save_click),
             ],
         )
-
         self.page.show_dialog(dialog)
 
-    def on_client_select(self, e, price_field, clients):
+    def on_client_select(self, e, price_field, clients, paid_checkbox):
         client_id = int(e.control.value)
         for c in clients:
             if c.doc_id == client_id:
                 price_field.value = str(c.workout_price)
                 price_field.update()
+
+                client_workouts = self.workout_service.get_client_workouts(client_id)
+                remaining = self.client_service.get_total_remaining_workouts(c, client_workouts)
+                if remaining > 0:
+                    paid_checkbox.value = True
+                    paid_checkbox.update()
                 break

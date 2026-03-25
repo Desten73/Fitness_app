@@ -1,4 +1,6 @@
 import flet as ft
+import shutil
+import os
 from datetime import datetime
 
 class HomeView:
@@ -8,11 +10,11 @@ class HomeView:
         self.workout_service = workout_service
 
     def build(self) -> ft.View:
-        # Ищем существующий Share или создаем новый, чтобы избежать дублирования в overlay
-        share = next((c for c in self.page.overlay if isinstance(c, ft.Share)), None)
-        if not share:
-            share = ft.Share()
-            self.page.overlay.append(share)
+        # Ищем существующий FilePicker или создаем новый
+        file_picker = next((c for c in self.page.overlay if isinstance(c, ft.FilePicker)), None)
+        if not file_picker:
+            file_picker = ft.FilePicker()
+            self.page.overlay.append(file_picker)
 
         now = datetime.now()
         current_date = now.strftime("%d.%m")
@@ -62,11 +64,18 @@ class HomeView:
         )
 
         async def export_db(e):
+            suggested_name = f"fitness_trainer_{now.strftime('%Y-%m-%d')}.json"
             try:
-                await share.share_files([ft.ShareFile.from_path("fitness_trainer.json")])
-                self.page.open(ft.SnackBar(ft.Text("База данных готова к отправке")))
+                # В данной версии flet save_file возвращает путь или None
+                save_path = await file_picker.save_file(
+                    file_name=suggested_name,
+                    allowed_extensions=["json"]
+                )
+                if save_path:
+                    shutil.copy("fitness_trainer.json", save_path)
+                    self.page.open(ft.SnackBar(ft.Text(f"Файл сохранен: {os.path.basename(save_path)}")))
             except Exception as ex:
-                self.page.open(ft.SnackBar(ft.Text(f"Ошибка при выгрузке: {str(ex)}")))
+                self.page.open(ft.SnackBar(ft.Text(f"Ошибка при сохранении: {str(ex)}")))
 
         export_button = ft.OutlinedButton(
             content=ft.Row(

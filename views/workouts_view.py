@@ -1,7 +1,7 @@
 import flet as ft
 from business_logic.workout_service import WorkoutService
 from models.workout import Workout
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time
 
 class WorkoutsView:
     def __init__(self, page: ft.Page, workout_service: WorkoutService, client_service):
@@ -133,20 +133,18 @@ class WorkoutsView:
     def delete_workout(self, workout: Workout):
         def confirm_delete(e):
             self.workout_service.delete_workout(workout.doc_id)
-            self.page.pop_dialog()
+            self.page.close(dialog)
             self.refresh_list(self.search_field.value)
 
         dialog = ft.AlertDialog(
             title=ft.Text("Подтверждение удаления"),
-            content=ft.Text(f"Вы уверены, что хотите удалить тренировку "
-                            f"{workout.date.strftime('%d.%m.%Y')} "
-                            f"{workout.time.strftime('%H:%M')}?"),
+            content=ft.Text(f"Вы уверены, что хотите удалить тренировку {workout.date.strftime('%d.%m.%Y')}?"),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda e: self.page.pop_dialog()),
-                ft.TextButton("Удалить", on_click=confirm_delete),
+                ft.TextButton("Отмена", on_click=lambda e: self.page.close(dialog)),
+                ft.TextButton("Удалить", on_click=confirm_delete, color=ft.Colors.RED),
             ],
         )
-        self.page.show_dialog(dialog)
+        self.page.open(dialog)
 
     def show_workout_dialog(self, workout: Workout = None):
         clients = self.client_service.get_all_clients()
@@ -165,18 +163,20 @@ class WorkoutsView:
             value=workout.status if workout else "Планируется"
         )
 
+        paid_checkbox = ft.Checkbox(label="Оплачено", value=workout.is_paid if workout else False)
+
         client_dropdown = ft.Dropdown(
             label="Клиент",
             options=client_options,
             value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-            on_select=lambda e: self.on_client_select(e, price_field, active_clients)
+            on_change=lambda e: self.on_client_select(e, price_field, active_clients, paid_checkbox)
         )
 
         date_val = workout.date if workout else date.today()
         date_button = ft.ElevatedButton(
             date_val.strftime("%d.%m.%Y"),
             icon=ft.Icons.CALENDAR_MONTH,
-            on_click=lambda e: self.page.show_dialog(date_picker)
+            on_click=lambda e: self.page.open(date_picker)
         )
 
         def on_date_change(e):
@@ -198,14 +198,11 @@ class WorkoutsView:
             input_filter=ft.NumbersOnlyInputFilter()
         )
 
-        paid_checkbox = ft.Checkbox(label="Оплачено", value=workout.is_paid if workout else False)
-
         program_field = ft.TextField(label="Тренировочная программа (скоро)", disabled=True)
 
         def save_click(e):
             if not client_dropdown.value:
                 self.page.snack_bar = ft.SnackBar(ft.Text("Выберите клиента"))
-                self.page.overlay.append(self.page.snack_bar)
                 self.page.snack_bar.open = True
                 self.page.update()
                 return
@@ -215,12 +212,11 @@ class WorkoutsView:
                 workout_time = time(int(t_parts[0]), int(t_parts[1]))
             except:
                 self.page.snack_bar = ft.SnackBar(ft.Text("Неверный формат времени"))
-                self.page.overlay.append(self.page.snack_bar)
                 self.page.snack_bar.open = True
                 self.page.update()
                 return
 
-            selected_date = date_picker.value + timedelta(days=1) if date_picker.value else date_val
+            selected_date = date_picker.value if date_picker.value else date_val
             if isinstance(selected_date, datetime):
                 selected_date = selected_date.date()
 
@@ -239,7 +235,7 @@ class WorkoutsView:
             else:
                 self.workout_service.add_workout(new_workout)
 
-            self.page.pop_dialog()
+            self.page.close(dialog)
             self.refresh_list(self.search_field.value)
 
         dialog = ft.AlertDialog(
@@ -258,17 +254,29 @@ class WorkoutsView:
                 scroll=ft.ScrollMode.AUTO
             ),
             actions=[
-                ft.TextButton("Отмена", on_click=lambda e: self.page.pop_dialog()),
+                ft.TextButton("Отмена", on_click=lambda e: self.page.close(dialog)),
                 ft.TextButton("Сохранить", on_click=save_click),
             ],
         )
 
-        self.page.show_dialog(dialog)
+        self.page.open(dialog)
 
-    def on_client_select(self, e, price_field, clients):
+    def on_client_select(self, e, price_field, clients, paid_checkbox):
         client_id = int(e.control.value)
+        selected_client = None
         for c in clients:
             if c.doc_id == client_id:
-                price_field.value = str(c.workout_price)
-                price_field.update()
+                selected_client = c
                 break
+
+        if selected_client:
+            price_field.value = str(selected_client.workout_price)
+
+            # Check for remaining workouts in packages
+            client_workouts = self.workout_service.get_client_workouts(client_id)
+            remaining = self.client_service.get_total_remaining_workouts(selected_client, client_workouts)
+            if remaining > 0:
+                paid_checkbox.value = True
+
+            price_field.update()
+            paid_checkbox.update()

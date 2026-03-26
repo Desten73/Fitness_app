@@ -40,6 +40,11 @@ class CalendarView:
                 ft.Icons.ARROW_BACK,
                 on_click=self.go_to_month_mode
             )
+        else:
+            app_bar.leading = ft.IconButton(
+                ft.Icons.ARROW_BACK,
+                on_click=lambda: self.page.go("/")
+            )
 
         calendar_content = ft.Column(
             [
@@ -88,10 +93,13 @@ class CalendarView:
         # Только если это явный свайп вниз (положительная дельта по Y)
         if self.view_mode == "WEEK" and e.primary_delta is not None and e.primary_delta > 5:
             self.go_to_month_mode(None)
+            self.refresh_calendar()
+            self.detailed_workouts_list.controls.clear()
 
     def go_to_month_mode(self, e):
         self.view_mode = "MONTH"
-        self.page.go("/calendar") # Перерисовываем вид
+        self.page.go("/calendar")
+        self.update_view()
 
     def prev_click(self, e):
         if self.view_mode == "MONTH":
@@ -255,7 +263,7 @@ class CalendarView:
         new_view = self.build()
         current_view = self.page.views[-1]
         current_view.controls = new_view.controls
-        current_view.app_bar = new_view.app_bar
+        current_view.app_bar = new_view.appbar
         current_view.scroll = new_view.scroll
         self.page.update()
 

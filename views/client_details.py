@@ -112,7 +112,7 @@ class ClientDetailsView:
 
     def build_packages_controls(self):
         self.packages_container.controls.clear()
-        self.packages_container.controls.append(ft.Text("Пакеты тренировк", size=18, weight=ft.FontWeight.BOLD))
+        self.packages_container.controls.append(ft.Text("Пакеты тренировок", size=18, weight=ft.FontWeight.BOLD))
 
         for i, pkg in enumerate(self.client.packages):
             rem = self.remaining_map.get(i, 0)

@@ -38,26 +38,7 @@ class StatisticsView:
 
         self.reset_dates_btn = ft.TextButton("Сбросить даты", on_click=self.reset_dates, visible=False)
 
-        self.chart = ft.LineChart(
-            data_series=[],
-            border=ft.Border(
-                bottom=ft.BorderSide(1, ft.Colors.with_opacity(0.5, ft.Colors.ON_SURFACE))
-            ),
-            left_axis=ft.ChartAxis(
-                labels=[
-                    ft.ChartAxisLabel(value=0, label=ft.Text("0")),
-                ],
-                labels_size=40,
-            ),
-            bottom_axis=ft.ChartAxis(
-                labels=[],
-                labels_size=30,
-            ),
-            expand=True,
-            min_y=0,
-            horizontal_grid_lines=ft.ChartGridLines(interval=1, color=ft.Colors.with_opacity(0.1, ft.Colors.ON_SURFACE)),
-            vertical_grid_lines=ft.ChartGridLines(interval=1, color=ft.Colors.with_opacity(0.1, ft.Colors.ON_SURFACE)),
-        )
+        self.weeks_stats_column = ft.Column(spacing=5)
 
         self.stats_column = ft.Column(spacing=10)
         self.extra_stats_column = ft.Column(spacing=10)
@@ -87,7 +68,7 @@ class StatisticsView:
                     padding=10
                 ),
                 ft.Text("Количество тренировок в неделю", size=16, weight=ft.FontWeight.BOLD),
-                ft.Container(self.chart, height=300, padding=10),
+                self.weeks_stats_column,
                 ft.Divider(),
                 self.stats_column,
                 self.extra_stats_column,
@@ -209,26 +190,18 @@ class StatisticsView:
         else:
             self.extra_stats_column.visible = False
 
-        # Chart Logic
-        self.update_chart(conducted_workouts)
+        # Weekly Stats Logic
+        self.update_weekly_stats(conducted_workouts)
 
-    def update_chart(self, conducted_workouts):
+    def update_weekly_stats(self, conducted_workouts):
+        self.weeks_stats_column.controls.clear()
         if not conducted_workouts:
-            self.chart.data_series = []
-            self.chart.left_axis.labels = [ft.ChartAxisLabel(value=0, label=ft.Text("0"))]
-            self.chart.bottom_axis.labels = []
+            self.weeks_stats_column.controls.append(ft.Text("Нет данных за выбранный период", size=14, italic=True))
             return
 
         workout_dates = [w.date for w in conducted_workouts]
-        if self.start_date:
-            range_start = self.start_date
-        else:
-            range_start = min(workout_dates)
-
-        if self.end_date:
-            range_end = self.end_date
-        else:
-            range_end = max(workout_dates)
+        range_start = self.start_date or min(workout_dates)
+        range_end = self.end_date or max(workout_dates)
 
         # Group by week (Monday)
         def get_monday(d):
@@ -237,12 +210,8 @@ class StatisticsView:
         start_monday = get_monday(range_start)
         end_monday = get_monday(range_end)
 
-        week_data = {}
-        curr = start_monday
-        week_num = 1
-        week_labels = []
-
         mondays = []
+        curr = start_monday
         while curr <= end_monday:
             mondays.append(curr)
             curr += timedelta(weeks=1)
@@ -253,33 +222,9 @@ class StatisticsView:
             m = get_monday(w.date)
             counts[m] += 1
 
-        data_points = []
-        max_count = 0
         for i, m in enumerate(mondays):
+            sunday = m + timedelta(days=6)
             count = counts[m]
-            data_points.append(ft.LineChartDataPoint(i + 1, count))
-            week_labels.append(ft.ChartAxisLabel(value=i + 1, label=ft.Text(str(i + 1))))
-            if count > max_count:
-                max_count = count
-
-        self.chart.data_series = [
-            ft.LineChartData(
-                data_points=data_points,
-                stroke_width=2,
-                color=ft.Colors.BLUE,
-                curved=True,
-                with_dots=True,
+            self.weeks_stats_column.controls.append(
+                ft.Text(f"Неделя {i + 1} ({m.strftime('%d.%m')} - {sunday.strftime('%d.%m')}): {count}", size=16)
             )
-        ]
-
-        self.chart.bottom_axis.labels = week_labels
-
-        # Adjust Y axis
-        y_labels = []
-        interval = max(1, max_count // 5)
-        for i in range(0, max_count + interval, interval):
-            y_labels.append(ft.ChartAxisLabel(value=i, label=ft.Text(str(i))))
-        self.chart.left_axis.labels = y_labels
-        self.chart.max_y = max_count + (interval if max_count > 0 else 1)
-        self.chart.min_x = 1
-        self.chart.max_x = len(mondays)

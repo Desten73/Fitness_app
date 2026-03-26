@@ -2,7 +2,7 @@ import flet as ft
 from datetime import date, time, datetime, timedelta
 from models.workout import Workout
 
-def show_workout_dialog(page: ft.Page, workout_service, client_service, workout: Workout = None, on_save=None):
+def show_workout_dialog(page: ft.Page, workout_service, client_service, exercise_service=None, program_service=None, workout: Workout = None, on_save=None):
     clients = client_service.get_all_clients()
     active_clients = [c for c in clients if not c.is_archived]
 
@@ -31,6 +31,14 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
 
     def on_client_select(e):
         client_id = int(e.control.value)
+        # Обновляем список программ для нового клиента
+        if program_service:
+            progs = program_service.get_client_programs(client_id)
+            program_dropdown.options = [ft.dropdown.Option(key=str(p.doc_id), text=p.name) for p in progs]
+            program_dropdown.value = None
+            update_exercises_ui(None)
+            program_dropdown.update()
+
         for c in active_clients:
             if c.doc_id == client_id:
                 price_field.value = str(c.workout_price)
@@ -78,7 +86,76 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
 
     paid_checkbox = ft.Checkbox(label="Оплачено", value=workout.is_paid if workout else False)
 
-    program_field = ft.TextField(label="Тренировочная программа (скоро)", disabled=True)
+    # Работа с программами
+    exercises_data = workout.exercises_data.copy() if workout and workout.exercises_data else {}
+    exercises_ui_col = ft.Column()
+
+    def update_exercises_ui(program):
+        exercises_ui_col.controls.clear()
+        if not program:
+            if page:
+                page.update()
+            return
+
+        exercises = exercise_service.get_all_exercises()
+        ex_map = {ex.doc_id: ex.name for ex in exercises}
+
+        for ex_id in program.exercise_ids:
+            ex_id_str = str(ex_id)
+            if ex_id_str not in exercises_data:
+                exercises_data[ex_id_str] = {"sets": "", "reps": "", "weight": ""}
+
+            data = exercises_data[ex_id_str]
+
+            exercises_ui_col.controls.append(ft.Text(ex_map.get(ex_id, "Упражнение удалено"), weight=ft.FontWeight.BOLD))
+
+            sets_field = ft.TextField(label="Подходы", value=data["sets"], width=100, on_change=lambda e, eid=ex_id_str: update_data(eid, "sets", e.control.value))
+            reps_field = ft.TextField(label="Повторы", value=data["reps"], width=100, on_change=lambda e, eid=ex_id_str: update_data(eid, "reps", e.control.value))
+            weight_field = ft.TextField(label="Вес", value=data["weight"], width=100, on_change=lambda e, eid=ex_id_str: update_data(eid, "weight", e.control.value))
+
+            exercises_ui_col.controls.append(ft.Row([sets_field, reps_field, weight_field]))
+
+        if page:
+            page.update()
+
+    def update_data(ex_id, field, value):
+        exercises_data[ex_id][field] = value
+
+    def on_program_change(e):
+        nonlocal exercises_data
+        exercises_data = {} # Reset data
+        if not e.control.value:
+            update_exercises_ui(None)
+            return
+
+        prog_id = int(e.control.value)
+        program = program_service.get_program(prog_id)
+
+        # Автозаполнение из последней тренировки
+        last_workout = workout_service.get_last_workout_with_program(int(client_dropdown.value), prog_id)
+        if last_workout and last_workout.exercises_data:
+            for ex_id in program.exercise_ids:
+                ex_id_str = str(ex_id)
+                if ex_id_str in last_workout.exercises_data:
+                    exercises_data[ex_id_str] = last_workout.exercises_data[ex_id_str].copy()
+
+        update_exercises_ui(program)
+
+    program_options = []
+    if workout and workout.client_ids and program_service:
+        progs = program_service.get_client_programs(workout.client_ids[0])
+        program_options = [ft.dropdown.Option(key=str(p.doc_id), text=p.name) for p in progs]
+
+    program_dropdown = ft.Dropdown(
+        label="Программа тренировки",
+        options=program_options,
+        value=str(workout.program_id) if workout and workout.program_id else None,
+        on_select=on_program_change
+    )
+
+    if workout and workout.program_id:
+        program = program_service.get_program(workout.program_id)
+        update_exercises_ui(program)
 
     def save_click(e):
         if not client_dropdown.value:
@@ -109,6 +186,8 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
             price=int(price_field.value or 0),
             status=status_dropdown.value,
             is_paid=paid_checkbox.value,
+            program_id=int(program_dropdown.value) if program_dropdown.value else None,
+            exercises_data=exercises_data,
             doc_id=workout.doc_id if workout else None
         )
 
@@ -159,7 +238,8 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, workout:
                 time_field,
                 price_field,
                 paid_checkbox,
-                program_field
+                program_dropdown,
+                exercises_ui_col
             ],
             tight=True,
             scroll=ft.ScrollMode.AUTO

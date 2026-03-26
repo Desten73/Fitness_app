@@ -5,10 +5,12 @@ from datetime import datetime, date, time, timedelta
 from views.workout_edit_dialog import show_workout_dialog
 
 class WorkoutsView:
-    def __init__(self, page: ft.Page, workout_service: WorkoutService, client_service):
+    def __init__(self, page: ft.Page, workout_service: WorkoutService, client_service, exercise_service, program_service):
         self.page = page
         self.workout_service = workout_service
         self.client_service = client_service
+        self.exercise_service = exercise_service
+        self.program_service = program_service
         self.workouts_list = ft.ListView(expand=1, spacing=10, padding=10)
         self.search_field = ft.TextField(
             label="Поиск (Клиент, статус, оплата, дата)",
@@ -130,10 +132,10 @@ class WorkoutsView:
         )
 
     def add_workout_click(self, e):
-        show_workout_dialog(self.page, self.workout_service, self.client_service, on_save=lambda: self.refresh_list(self.search_field.value))
+        show_workout_dialog(self.page, self.workout_service, self.client_service, self.exercise_service, self.program_service, on_save=lambda: self.refresh_list(self.search_field.value))
 
     def edit_workout(self, workout: Workout):
-        show_workout_dialog(self.page, self.workout_service, self.client_service, workout=workout, on_save=lambda: self.refresh_list(self.search_field.value))
+        show_workout_dialog(self.page, self.workout_service, self.client_service, self.exercise_service, self.program_service, workout=workout, on_save=lambda: self.refresh_list(self.search_field.value))
 
     def delete_workout(self, workout: Workout):
         def confirm_delete(e):

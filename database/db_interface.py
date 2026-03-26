@@ -48,3 +48,43 @@ class ClientDatabaseInterface(ABC):
     def delete_workout(self, doc_id: int) -> None:
         """Удаляет тренировку"""
         pass
+
+    @abstractmethod
+    def get_all_exercises(self) -> List[dict]:
+        """Возвращает список всех упражнений"""
+        pass
+
+    @abstractmethod
+    def add_exercise(self, exercise_data: dict) -> int:
+        """Добавляет упражнение"""
+        pass
+
+    @abstractmethod
+    def update_exercise(self, doc_id: int, exercise_data: dict) -> None:
+        """Обновляет упражнение"""
+        pass
+
+    @abstractmethod
+    def delete_exercise(self, doc_id: int) -> None:
+        """Удаляет упражнение"""
+        pass
+
+    @abstractmethod
+    def get_all_programs(self) -> List[dict]:
+        """Возвращает список всех тренировочных программ"""
+        pass
+
+    @abstractmethod
+    def add_program(self, program_data: dict) -> int:
+        """Добавляет тренировочную программу"""
+        pass
+
+    @abstractmethod
+    def update_program(self, doc_id: int, program_data: dict) -> None:
+        """Обновляет тренировочную программу"""
+        pass
+
+    @abstractmethod
+    def delete_program(self, doc_id: int) -> None:
+        """Удаляет тренировочную программу"""
+        pass

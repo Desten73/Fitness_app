@@ -7,6 +7,8 @@ class TinyDBClient(ClientDatabaseInterface):
         self.db = TinyDB(db_path)
         self.clients_table = self.db.table("clients")
         self.workouts_table = self.db.table("workouts")
+        self.exercises_table = self.db.table("exercises")
+        self.programs_table = self.db.table("programs")
         self.query = Query()
 
     def get_all_clients(self) -> List[dict]:
@@ -52,3 +54,39 @@ class TinyDBClient(ClientDatabaseInterface):
 
     def delete_workout(self, doc_id: int) -> None:
         self.workouts_table.remove(doc_ids=[doc_id])
+
+    def get_all_exercises(self) -> List[dict]:
+        exercises = self.exercises_table.all()
+        result = []
+        for ex in exercises:
+            ex_dict = dict(ex)
+            ex_dict["doc_id"] = ex.doc_id
+            result.append(ex_dict)
+        return result
+
+    def add_exercise(self, exercise_data: dict) -> int:
+        return self.exercises_table.insert(exercise_data)
+
+    def update_exercise(self, doc_id: int, exercise_data: dict) -> None:
+        self.exercises_table.update(exercise_data, doc_ids=[doc_id])
+
+    def delete_exercise(self, doc_id: int) -> None:
+        self.exercises_table.remove(doc_ids=[doc_id])
+
+    def get_all_programs(self) -> List[dict]:
+        programs = self.programs_table.all()
+        result = []
+        for p in programs:
+            p_dict = dict(p)
+            p_dict["doc_id"] = p.doc_id
+            result.append(p_dict)
+        return result
+
+    def add_program(self, program_data: dict) -> int:
+        return self.programs_table.insert(program_data)
+
+    def update_program(self, doc_id: int, program_data: dict) -> None:
+        self.programs_table.update(program_data, doc_ids=[doc_id])
+
+    def delete_program(self, doc_id: int) -> None:
+        self.programs_table.remove(doc_ids=[doc_id])

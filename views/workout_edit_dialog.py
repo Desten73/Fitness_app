@@ -55,7 +55,7 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, exercise
         label="Клиент",
         options=client_options,
         value=str(workout.client_ids[0]) if workout and workout.client_ids else None,
-        on_change=on_client_select
+        on_select=on_client_select
     )
 
     date_val = workout.date if workout else date.today()
@@ -150,7 +150,7 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, exercise
         label="Программа тренировки",
         options=program_options,
         value=str(workout.program_id) if workout and workout.program_id else None,
-        on_change=on_program_change
+        on_select=on_program_change
     )
 
     if workout and workout.program_id:

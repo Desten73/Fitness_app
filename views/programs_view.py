@@ -84,7 +84,7 @@ class ProgramsView:
             add_ex_dropdown = ft.Dropdown(
                 label="Добавить упражнение",
                 options=ex_options,
-                on_change=on_ex_select,
+                on_select=on_ex_select,
                 width=300
             )
             exercises_col.controls.append(add_ex_dropdown)

@@ -6,10 +6,12 @@ from business_logic.client_service import ClientService
 from views.workout_edit_dialog import show_workout_dialog
 
 class CalendarView:
-    def __init__(self, page: ft.Page, client_service: ClientService, workout_service: WorkoutService):
+    def __init__(self, page: ft.Page, client_service: ClientService, workout_service: WorkoutService, exercise_service, program_service):
         self.page = page
         self.client_service = client_service
         self.workout_service = workout_service
+        self.exercise_service = exercise_service
+        self.program_service = program_service
         self.current_year = datetime.now().year
         self.current_month = datetime.now().month
         self.view_mode = "MONTH"  # "MONTH" или "WEEK"
@@ -302,10 +304,10 @@ class CalendarView:
         self.page.update()
 
     def add_workout_click(self, e):
-        show_workout_dialog(self.page, self.workout_service, self.client_service, on_save=self.on_dialog_save)
+        show_workout_dialog(self.page, self.workout_service, self.client_service, self.exercise_service, self.program_service, on_save=self.on_dialog_save)
 
     def edit_workout(self, workout):
-        show_workout_dialog(self.page, self.workout_service, self.client_service,
+        show_workout_dialog(self.page, self.workout_service, self.client_service, self.exercise_service, self.program_service,
                             workout=workout, on_save=self.on_dialog_save)
 
     def on_dialog_save(self):

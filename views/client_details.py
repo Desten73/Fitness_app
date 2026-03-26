@@ -6,10 +6,12 @@ from business_logic.workout_service import WorkoutService
 from views.workout_edit_dialog import show_workout_dialog
 
 class ClientDetailsView:
-    def __init__(self, page: ft.Page, client_service: ClientService, workout_service: WorkoutService, client_id: int):
+    def __init__(self, page: ft.Page, client_service: ClientService, workout_service: WorkoutService, exercise_service, program_service, client_id: int):
         self.page = page
         self.client_service = client_service
         self.workout_service = workout_service
+        self.exercise_service = exercise_service
+        self.program_service = program_service
         self.client_id = client_id
         self.client = self.client_service.get_client(client_id)
         self.edit_mode = False
@@ -158,7 +160,7 @@ class ClientDetailsView:
             self.rebuild_ui_controls()
             self.page.update()
 
-        show_workout_dialog(self.page, self.workout_service, self.client_service, workout=workout, on_save=on_save)
+        show_workout_dialog(self.page, self.workout_service, self.client_service, self.exercise_service, self.program_service, workout=workout, on_save=on_save)
 
     def toggle_edit(self, e):
         self.edit_mode = not self.edit_mode

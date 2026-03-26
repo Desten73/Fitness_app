@@ -29,6 +29,8 @@ class HomeView:
             ("Клиенты", ft.Icons.PEOPLE, "/clients"),
             ("Календарь тренировок", ft.Icons.CALENDAR_MONTH, "/calendar"),
             ("Статистика", ft.Icons.QUERY_STATS, "/statistics"),
+            ("Упражнения", ft.Icons.LIST, "/exercises"),
+            ("Тренировочная программа", ft.Icons.DASHBOARD, "/programs"),
         ]
 
         buttons_column = ft.Column(

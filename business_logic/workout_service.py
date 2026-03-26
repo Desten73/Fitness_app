@@ -98,3 +98,16 @@ class WorkoutService:
         """Возвращает все тренировки конкретного клиента"""
         all_workouts = self.get_all_workouts()
         return [w for w in all_workouts if client_id in w.client_ids]
+
+    def get_last_workout_with_program(self, client_id: int, program_id: int) -> Workout | None:
+        """Возвращает последнюю проведенную тренировку клиента с данной программой"""
+        client_workouts = self.get_client_workouts(client_id)
+        # Фильтруем по программе и статусу "Проведена" (или просто по программе, если нужно из любой последней)
+        # По требованию: "из последней тренировки клиента с такой тренировочной программой"
+        program_workouts = [w for w in client_workouts if w.program_id == program_id]
+        if not program_workouts:
+            return None
+
+        # Сортируем по дате и времени в порядке убывания
+        program_workouts.sort(key=lambda w: (w.date, w.time), reverse=True)
+        return program_workouts[0]

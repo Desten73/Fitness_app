@@ -2,6 +2,8 @@ import flet as ft
 from database.tinydb_client import TinyDBClient
 from business_logic.client_service import ClientService
 from business_logic.workout_service import WorkoutService
+from business_logic.exercise_service import ExerciseService
+from business_logic.program_service import ProgramService
 from views.home_view import HomeView
 
 
@@ -15,6 +17,8 @@ def main(page: ft.Page):
     db = TinyDBClient("fitness_trainer.json")
     client_service = ClientService(db)
     workout_service = WorkoutService(db)
+    exercise_service = ExerciseService(db)
+    program_service = ProgramService(db)
 
     def on_route_change(e):
         page.views.clear()
@@ -23,13 +27,19 @@ def main(page: ft.Page):
 
         if page.route == "/workouts":
             from views.workouts_view import WorkoutsView
-            page.views.append(WorkoutsView(page, workout_service, client_service).build())
+            page.views.append(WorkoutsView(page, workout_service, client_service, exercise_service, program_service).build())
+        elif page.route == "/exercises":
+            from views.exercises_view import ExercisesView
+            page.views.append(ExercisesView(page, exercise_service).build())
+        elif page.route == "/programs":
+            from views.programs_view import ProgramsView
+            page.views.append(ProgramsView(page, program_service, client_service, exercise_service).build())
         elif page.route == "/clients":
             from views.clients_view import ClientsView
             page.views.append(ClientsView(page, client_service, workout_service).build())
         elif page.route == "/calendar":
             from views.calendar_view import CalendarView
-            page.views.append(CalendarView(page, client_service, workout_service).build())
+            page.views.append(CalendarView(page, client_service, workout_service, exercise_service, program_service).build())
         elif page.route == "/statistics":
             from views.statistics_view import StatisticsView
             page.views.append(StatisticsView(page, client_service, workout_service).build())
@@ -39,7 +49,7 @@ def main(page: ft.Page):
         elif page.route.startswith("/client_details/"):
             from views.client_details import ClientDetailsView
             client_id = int(page.route.split("/")[-1])
-            page.views.append(ClientDetailsView(page, client_service, workout_service, client_id).build())
+            page.views.append(ClientDetailsView(page, client_service, workout_service, exercise_service, program_service, client_id).build())
 
         page.update()
 

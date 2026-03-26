@@ -15,18 +15,18 @@ class StatisticsView:
             label="Выберите клиента",
             options=[ft.dropdown.Option(key="all", text="Все клиенты")],
             value="all",
-            on_change=self.on_filter_change
+            on_select=self.on_filter_change
         )
 
         self.start_date_btn = ft.ElevatedButton(
             "Начальная дата",
             icon=ft.Icons.CALENDAR_MONTH,
-            on_click=lambda _: self.page.open(self.start_date_picker)
+            on_click=lambda _: self.page.show_dialog(self.start_date_picker)
         )
         self.end_date_btn = ft.ElevatedButton(
             "Конечная дата",
             icon=ft.Icons.CALENDAR_MONTH,
-            on_click=lambda _: self.page.open(self.end_date_picker)
+            on_click=lambda _: self.page.show_dialog(self.end_date_picker)
         )
 
         self.start_date_picker = ft.DatePicker(
@@ -72,8 +72,7 @@ class StatisticsView:
                 ft.Divider(),
                 self.stats_column,
                 self.extra_stats_column,
-                ft.Container(height=20),
-                ft.ElevatedButton("Назад", on_click=lambda _: self.page.views.pop() or self.page.update())
+                ft.Container(height=20)
             ],
             padding=20,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER

@@ -72,12 +72,22 @@ class ProgramsView:
                     ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
                 )
 
-            # Button to add another exercise
-            add_ex_btn = ft.PopupMenuButton(
-                items=[ft.PopupMenuItem(text=ex.name, on_click=lambda _, ex_id=ex.doc_id: add_exercise(ex_id)) for ex in exercises],
-                content=ft.ElevatedButton("Добавить упражнение")
+            # Dropdown to select and add another exercise
+            ex_options = [ft.dropdown.Option(key=str(ex.doc_id), text=ex.name) for ex in exercises]
+
+            def on_ex_select(e):
+                if e.control.value:
+                    add_exercise(int(e.control.value))
+                    e.control.value = None
+                    e.control.update()
+
+            add_ex_dropdown = ft.Dropdown(
+                label="Добавить упражнение",
+                options=ex_options,
+                on_change=on_ex_select,
+                width=300
             )
-            exercises_col.controls.append(add_ex_btn)
+            exercises_col.controls.append(add_ex_dropdown)
             self.page.update()
 
         def add_exercise(ex_id):

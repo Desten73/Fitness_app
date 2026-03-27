@@ -68,9 +68,9 @@ class WorkoutService:
             filtered.sort(key=lambda w: (w.date, w.time), reverse=True)
             return {"search_results": filtered}
 
-        today_workouts = [w for w in all_workouts if w.date == today]
+        today_workouts = [w for w in all_workouts if w.date == today and w.status != "Проведена"]
         future_workouts = [w for w in all_workouts if w.date > today]
-        past_workouts = [w for w in all_workouts if w.date < today]
+        past_workouts = [w for w in all_workouts if w.date < today or (w.date == today and w.status == "Проведена")]
 
         # Сегодняшние: от меньшего времени к большему
         today_workouts.sort(key=lambda w: w.time)

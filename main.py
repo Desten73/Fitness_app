@@ -12,6 +12,7 @@ def main(page: ft.Page):
     page.title = "Фитнес-тренер"
     page.theme_mode = ft.ThemeMode.LIGHT
     page.padding = 20
+    page.locale = "ru-RU"
 
     # Инициализация базы данных и сервисов
     db = TinyDBClient("fitness_trainer.json")
@@ -42,7 +43,7 @@ def main(page: ft.Page):
             page.views.append(CalendarView(page, client_service, workout_service, exercise_service, program_service).build())
         elif page.route == "/statistics":
             from views.statistics_view import StatisticsView
-            page.views.append(StatisticsView(page, client_service, workout_service).build())
+            page.views.append(StatisticsView(page, client_service, workout_service, exercise_service, program_service).build())
         elif page.route == "/add_client":
             from views.add_client import AddClientView
             page.views.append(AddClientView(page, client_service).build())

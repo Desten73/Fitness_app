@@ -86,8 +86,10 @@ class WorkoutsView:
         client_names = [client_map.get(cid, "Неизвестный") for cid in w.client_ids]
         client_names_str = ", ".join(client_names)
 
+        is_effectively_past = is_past or (w.date == datetime.now().date() and w.status == "Проведена")
+
         bgcolor = None
-        if is_past:
+        if is_effectively_past:
             if not w.is_paid:
                 bgcolor = ft.Colors.RED_100
             else:

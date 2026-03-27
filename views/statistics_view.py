@@ -3,10 +3,12 @@ from datetime import datetime, date, timedelta
 from collections import Counter, defaultdict
 
 class StatisticsView:
-    def __init__(self, page: ft.Page, client_service, workout_service):
+    def __init__(self, page: ft.Page, client_service, workout_service, exercise_service=None, program_service=None):
         self.page = page
         self.client_service = client_service
         self.workout_service = workout_service
+        self.exercise_service = exercise_service
+        self.program_service = program_service
 
         self.start_date = None
         self.end_date = None
@@ -42,6 +44,7 @@ class StatisticsView:
 
         self.stats_column = ft.Column(spacing=10)
         self.extra_stats_column = ft.Column(spacing=10)
+        self.programs_stats_column = ft.Column(spacing=20)
 
     def build(self) -> ft.View:
         clients = self.client_service.get_all_clients()
@@ -72,6 +75,7 @@ class StatisticsView:
                 ft.Divider(),
                 self.stats_column,
                 self.extra_stats_column,
+                self.programs_stats_column,
                 ft.Container(height=20)
             ],
             padding=20,
@@ -191,6 +195,113 @@ class StatisticsView:
 
         # Weekly Stats Logic
         self.update_weekly_stats(conducted_workouts)
+        self.update_programs_statistics(selected_client_id, conducted_workouts)
+
+    def update_programs_statistics(self, client_id, conducted_workouts):
+        self.programs_stats_column.controls.clear()
+        if not client_id or not self.program_service or not self.exercise_service:
+            return
+
+        # Группируем тренировки по программам
+        program_workouts = defaultdict(list)
+        for w in conducted_workouts:
+            if w.program_id:
+                program_workouts[w.program_id].append(w)
+
+        if not program_workouts:
+            return
+
+        self.programs_stats_column.controls.append(ft.Text("Прогресс по тренировочным программам", size=18, weight=ft.FontWeight.BOLD))
+
+        exercises = self.exercise_service.get_all_exercises()
+        ex_map = {ex.doc_id: ex.name for ex in exercises}
+
+        for prog_id, workouts in program_workouts.items():
+            program = self.program_service.get_program(prog_id)
+            if not program:
+                continue
+
+            # Сортируем тренировки по дате
+            workouts.sort(key=lambda w: (w.date, w.time))
+
+            # Собираем все упражнения, которые были в этой программе
+            prog_exercise_ids = program.exercise_ids
+
+            # Создаем таблицу
+            rows = []
+
+            # Заголовок таблицы (даты)
+            header_cells = [ft.DataColumn(ft.Text("Упражнение"))]
+            for w in workouts:
+                header_cells.append(ft.DataColumn(ft.Text(w.date.strftime("%d.%m"))))
+
+            for ex_id in prog_exercise_ids:
+                cells = [ft.DataCell(ft.Text(ex_map.get(ex_id, f"ID: {ex_id}")))]
+
+                first_total_weight = None
+                prev_total_weight = None
+
+                for w in workouts:
+                    ex_data = w.exercises_data.get(str(ex_id)) if w.exercises_data else None
+                    if ex_data and ex_data.get("sets") and ex_data.get("reps") and ex_data.get("weight"):
+                        try:
+                            sets = float(ex_data["sets"])
+                            reps = float(ex_data["reps"])
+                            weight = float(ex_data["weight"])
+                            total_weight = sets * reps * weight
+
+                            # Расчет коэффициентов
+                            if first_total_weight is None:
+                                first_total_weight = total_weight
+                                coeff_first = 1.0
+                                coeff_prev = 1.0
+                            else:
+                                coeff_first = total_weight / first_total_weight if first_total_weight != 0 else 1.0
+                                coeff_prev = total_weight / prev_total_weight if prev_total_weight != 0 else 1.0
+
+                            prev_total_weight = total_weight
+
+                            # Цвет текста для прогресса
+                            progress_color_prev = None
+                            if coeff_prev > 1:
+                                progress_color_prev = ft.Colors.GREEN
+                            elif coeff_prev < 1:
+                                progress_color_prev = ft.Colors.RED
+
+                            progress_color_first = None
+                            if coeff_first > 1:
+                                progress_color_first = ft.Colors.GREEN
+                            elif coeff_first < 1:
+                                progress_color_first = ft.Colors.RED
+
+                            cell_content = ft.Column([
+                                ft.Text(f"{int(sets)}/{int(reps)}/{int(weight)}кг", size=12),
+                                ft.Text(
+                                    spans=[
+                                        ft.TextSpan("Пред: ", style=ft.TextStyle(size=10)),
+                                        ft.TextSpan(f"{coeff_prev:.2f}", style=ft.TextStyle(size=10, color=progress_color_prev)),
+                                        ft.TextSpan(", Перв: ", style=ft.TextStyle(size=10)),
+                                        ft.TextSpan(f"{coeff_first:.2f}", style=ft.TextStyle(size=10, color=progress_color_first)),
+                                    ]
+                                )
+                            ], spacing=0)
+                            cells.append(ft.DataCell(cell_content))
+                        except ValueError:
+                            cells.append(ft.DataCell(ft.Text("-")))
+                    else:
+                        cells.append(ft.DataCell(ft.Text("-")))
+
+                rows.append(ft.DataRow(cells=cells))
+
+            self.programs_stats_column.controls.append(ft.Column([
+                ft.Text(f"Программа: {program.name}", size=16, weight=ft.FontWeight.W_500),
+                ft.DataTable(
+                    columns=header_cells,
+                    rows=rows,
+                    column_spacing=15,
+                    horizontal_lines=ft.border.BorderSide(1, ft.Colors.GREY_200),
+                )
+            ], scroll=ft.ScrollMode.ALWAYS))
 
     def update_weekly_stats(self, conducted_workouts):
         self.weeks_stats_column.controls.clear()

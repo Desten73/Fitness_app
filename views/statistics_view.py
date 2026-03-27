@@ -280,7 +280,7 @@ class StatisticsView:
                                     spans=[
                                         ft.TextSpan("Пред: ", style=ft.TextStyle(size=10)),
                                         ft.TextSpan(f"{coeff_prev:.2f}", style=ft.TextStyle(size=10, color=progress_color_prev)),
-                                        ft.TextSpan(", Перв: ", style=ft.TextStyle(size=10)),
+                                        ft.TextSpan("\nПерв: ", style=ft.TextStyle(size=10)),
                                         ft.TextSpan(f"{coeff_first:.2f}", style=ft.TextStyle(size=10, color=progress_color_first)),
                                     ]
                                 )

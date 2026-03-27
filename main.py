@@ -12,7 +12,12 @@ def main(page: ft.Page):
     page.title = "Фитнес-тренер"
     page.theme_mode = ft.ThemeMode.LIGHT
     page.padding = 20
-    page.locale = "ru-RU"
+    page.locale_configuration = ft.LocaleConfiguration(
+        supported_locales=[
+            ft.Locale("ru", "RU"),
+        ],
+        current_locale=ft.Locale("ru", "RU"),
+    )
 
     # Инициализация базы данных и сервисов
     db = TinyDBClient("fitness_trainer.json")

@@ -67,11 +67,11 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, exercise
 
     def on_date_change(e):
         if e.control.value:
-            date_button.text = e.control.value.strftime("%d.%m.%Y")
+            date_button.content = (e.control.value + timedelta(days=1)).strftime("%d.%m.%Y")
             date_button.update()
 
     date_picker = ft.DatePicker(
-        value=datetime.combine(date_val, time.min),
+        value=date_val,
         on_change=on_date_change
     )
 
@@ -177,7 +177,7 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, exercise
 
         selected_date = date_picker.value if date_picker.value else date_val
         if isinstance(selected_date, datetime):
-            selected_date = selected_date.date()
+            selected_date = selected_date.date() + timedelta(days=1)
 
         new_workout = Workout(
             client_ids=[int(client_dropdown.value)],

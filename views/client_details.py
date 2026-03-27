@@ -198,7 +198,7 @@ class ClientDetailsView:
             color = ft.Colors.GREY_500 if is_dimmed else ft.Colors.BLACK
             self.history_container.controls.append(
                 ft.ListTile(
-                    title=ft.Text(f"{w.date} {w.time}", color=color),
+                    title=ft.Text(f"{w.date.strftime("%d.%m.%Y")} {w.time}", color=color),
                     subtitle=ft.Text(f"Статус: {w.status}, Цена: {w.price}", color=color),
                     on_click=lambda e, workout=w: self.edit_workout(workout)
                 )

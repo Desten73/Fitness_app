@@ -23,7 +23,13 @@ class ClientDetailsView:
 
         # Поля редактирования
         self.name_field = ft.TextField(label="Имя")
-        self.phone_field = ft.TextField(label="Телефон")
+        self._last_phone_val = ""
+        self.phone_field = ft.TextField(
+            label="Телефон",
+            on_focus=self.on_phone_focus,
+            on_change=self.on_phone_change,
+            input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9+() \-]", replacement_string="")
+        )
         self.price_field = ft.TextField(label="Стоимость тренировки", input_filter=ft.NumbersOnlyInputFilter())
         self.status_checkbox = ft.Checkbox(label="В архиве")
         self.goals_field = ft.TextField(label="Цели")
@@ -32,6 +38,53 @@ class ClientDetailsView:
         # Поля для нового пакета
         self.new_pkg_count = ft.TextField(label="Кол-во тренировок", expand=True, input_filter=ft.NumbersOnlyInputFilter())
         self.new_pkg_price = ft.TextField(label="Стоимость пакета", expand=True, input_filter=ft.NumbersOnlyInputFilter())
+
+    def on_phone_focus(self, e):
+        if not e.control.value:
+            e.control.value = "+7 ("
+            self._last_phone_val = "+7 ("
+            e.control.update()
+
+    def on_phone_change(self, e):
+        v = e.control.value
+        last_v = self._last_phone_val
+        is_deletion = len(v) < len(last_v)
+
+        if is_deletion:
+            if v in ["+7 (", "+7 ", "+7", "+", ""]:
+                e.control.value = ""
+            else:
+                e.control.value = v
+            self._last_phone_val = e.control.value
+            e.control.update()
+            return
+
+        digits = "".join([c for c in v if c.isdigit()])
+        if digits.startswith("7") or digits.startswith("8"):
+            digits = digits[1:]
+
+        digits = digits[:10]
+
+        res = "+7 ("
+        if len(digits) >= 1:
+            res += digits[:min(len(digits), 3)]
+        if len(digits) >= 4:
+            res += ") " + digits[3:min(len(digits), 6)]
+        if len(digits) >= 7:
+            res += "-" + digits[6:min(len(digits), 8)]
+        if len(digits) >= 9:
+            res += "-" + digits[8:min(len(digits), 10)]
+
+        if len(digits) == 3:
+            res += ") "
+        elif len(digits) == 6:
+            res += "-"
+        elif len(digits) == 8:
+            res += "-"
+
+        e.control.value = res
+        self._last_phone_val = res
+        e.control.update()
 
     def build(self) -> ft.View:
         if not self.client:
@@ -145,7 +198,7 @@ class ClientDetailsView:
             color = ft.Colors.GREY_500 if is_dimmed else ft.Colors.BLACK
             self.history_container.controls.append(
                 ft.ListTile(
-                    title=ft.Text(f"{w.date} {w.time}", color=color),
+                    title=ft.Text(f"{w.date.strftime("%d.%m.%Y")} {w.time}", color=color),
                     subtitle=ft.Text(f"Статус: {w.status}, Цена: {w.price}", color=color),
                     on_click=lambda e, workout=w: self.edit_workout(workout)
                 )
@@ -168,8 +221,19 @@ class ClientDetailsView:
         self.page.update()
 
     def save_changes(self, e):
+        if not self.name_field.value:
+            self.page.snack_bar = ft.SnackBar(ft.Text("Имя обязательно"))
+            self.page.overlay.append(self.page.snack_bar)
+            self.page.snack_bar.open = True
+            self.page.update()
+            return
+
+        phone = self.phone_field.value
+        if phone == "+7 (":
+            phone = ""
+
         self.client.name = self.name_field.value
-        self.client.phone = self.phone_field.value
+        self.client.phone = phone
         self.client.workout_price = int(self.price_field.value or 1000)
         self.client.is_archived = self.status_checkbox.value
         self.client.goals = [g.strip() for g in self.goals_field.value.split(",")] if self.goals_field.value else []

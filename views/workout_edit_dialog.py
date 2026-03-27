@@ -76,7 +76,63 @@ def show_workout_dialog(page: ft.Page, workout_service, client_service, exercise
     )
 
     time_val = workout.time if workout else time(12, 0)
-    time_field = ft.TextField(label="Время (ЧЧ:ММ)", value=time_val.strftime("%H:%M"))
+    last_time_value = time_val.strftime("%H:%M")
+
+    def on_time_change(e):
+        nonlocal last_time_value
+        current_value = e.control.value
+
+        # Only allow digits
+        digits = "".join([c for c in current_value if c.isdigit()])
+        digits = digits[:4]  # Max 4 digits
+
+        # Detect deletion of colon
+        is_deletion = len(current_value) < len(last_time_value)
+
+        if is_deletion and last_time_value.endswith(":") and not current_value.endswith(":"):
+            # "XX:" -> "XX" -> "X:"
+            if len(digits) == 2:
+                new_val = digits[0] + ":"
+            # "X:" -> "X" -> ""
+            elif len(digits) == 1:
+                new_val = ""
+            else:
+                new_val = ""
+        else:
+            # Format according to rules
+            new_val = ""
+            if len(digits) >= 1:
+                d1 = digits[0]
+                if d1 in "012":
+                    new_val += d1
+
+            if len(digits) >= 2 and len(new_val) == 1:
+                d2 = digits[1]
+                if new_val[0] == "2":
+                    if d2 in "0123":
+                        new_val += d2 + ":"
+                else:
+                    new_val += d2 + ":"
+
+            if len(digits) >= 3 and ":" in new_val:
+                d3 = digits[2]
+                if d3 in "012345":
+                    new_val += d3
+
+            if len(digits) >= 4 and len(new_val) == 4:
+                d4 = digits[3]
+                new_val += d4
+
+        e.control.value = new_val
+        last_time_value = new_val
+        e.control.update()
+
+    time_field = ft.TextField(
+        label="Время (ЧЧ:ММ)",
+        value=time_val.strftime("%H:%M"),
+        on_change=on_time_change,
+        input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9:]", replacement_string="")
+    )
 
     price_field = ft.TextField(
         label="Стоимость",

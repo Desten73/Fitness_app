@@ -68,9 +68,11 @@ class WorkoutService:
             filtered.sort(key=lambda w: (w.date, w.time), reverse=True)
             return {"search_results": filtered}
 
-        today_workouts = [w for w in all_workouts if w.date == today and w.status != "Проведена"]
+        today_workouts = [w for w in all_workouts if w.date == today
+                          and w.status != "Проведена" and w.status != "Отменена"]
         future_workouts = [w for w in all_workouts if w.date > today]
-        past_workouts = [w for w in all_workouts if w.date < today or (w.date == today and w.status == "Проведена")]
+        past_workouts = [w for w in all_workouts if w.date < today or
+                         (w.date == today and (w.status == "Проведена" or w.status == "Отменена"))]
 
         # Сегодняшние: от меньшего времени к большему
         today_workouts.sort(key=lambda w: w.time)
@@ -81,8 +83,8 @@ class WorkoutService:
         # Прошедшие:
         # Сначала неоплаченные (красные), от большей даты к меньшей
         # Затем оплаченные (серые), от большей даты к меньшей (лимит 10)
-        past_unpaid = [w for w in past_workouts if not w.is_paid]
-        past_paid = [w for w in past_workouts if w.is_paid]
+        past_unpaid = [w for w in past_workouts if not w.is_paid and w.status == "Проведена"]
+        past_paid = [w for w in past_workouts if w.is_paid or w.status != "Проведена"]
 
         past_unpaid.sort(key=lambda w: (w.date, w.time), reverse=True)
         past_paid.sort(key=lambda w: (w.date, w.time), reverse=True)

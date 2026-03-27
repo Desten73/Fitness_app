@@ -90,7 +90,7 @@ class WorkoutsView:
 
         bgcolor = None
         if is_effectively_past:
-            if not w.is_paid:
+            if not w.is_paid and w.status == "Проведена":
                 bgcolor = ft.Colors.RED_100
             else:
                 bgcolor = ft.Colors.GREY_200
